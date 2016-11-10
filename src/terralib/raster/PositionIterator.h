@@ -446,29 +446,34 @@ namespace te
       {
         throw te::rst::Exception( TE_TR("Invalid polygon SRID") );
       }
+
+      const te::rst::Grid& rasterGrid = *r->getGrid();
+      const te::gm::Envelope& rasterEnvelope = *rasterGrid.getExtent();
       
       te::gm::Coord2D ll = m_polygon->getMBR()->getLowerLeft();
       te::gm::Coord2D ur = m_polygon->getMBR()->getUpperRight();
+
       te::gm::Coord2D llIndexed;
       r->getGrid()->geoToGrid(ll.x, ll.y, llIndexed.x, llIndexed.y);
       te::gm::Coord2D urIndexed;
       r->getGrid()->geoToGrid(ur.x, ur.y, urIndexed.x, urIndexed.y);      
       
-      if( 
+      if( // The polygon is smaller than one pixel
           ( ( urIndexed.x - llIndexed.x ) < 1.0 )
           ||
           ( ( llIndexed.y - urIndexed.y ) < 1.0 )
+          // The polygon extent is outside the current raster area
           ||
-          ( llIndexed.x > ( ((double)r->getNumberOfColumns()) - 0.5 ) )
+          ( ll.x > rasterEnvelope.m_urx )
           ||
-          ( llIndexed.y < ( -0.5 ) )
+          ( ur.x < rasterEnvelope.m_llx )
           ||
-          ( urIndexed.x < ( -0.5 ) )
+          ( ur.y < rasterEnvelope.m_lly )
           ||
-          ( urIndexed.y > ( ((double)r->getNumberOfRows()) - 0.5 ) )
+          ( ll.y > rasterEnvelope.m_ury )
         )
       {
-        // The polygon is smaller than one pixel or is outside the raster area
+        // The polygon is smaller than one pixel
         setEnd();
       }
       else
@@ -476,13 +481,13 @@ namespace te
         // defining starting/ending rows
         
         m_startingrow = (int)std::ceil( urIndexed.y );
+        m_startingrow = std::max( 0, m_startingrow );
+        m_startingrow = std::min( m_startingrow, ((int)r->getNumberOfRows()) - 1 );
+
         m_endingrow = (int)std::floor( llIndexed.y );
-        assert( m_startingrow <= m_endingrow );
-        assert( m_startingrow >= 0 );
-        assert( m_startingrow < (int)r->getNumberOfRows() );        
-        assert( m_endingrow >= 0 );
-        assert( m_endingrow < (int)r->getNumberOfRows() );
-        
+        m_endingrow = std::max( 0, m_endingrow );
+        m_endingrow = std::min( m_endingrow, ((int)r->getNumberOfRows()) - 1 );
+
         // initialize the TileIndexer
         
         m_tileIndexer = std::auto_ptr<te::rst::TileIndexer>(new te::rst::TileIndexer(*m_polygon, r->getResolutionY()));
@@ -528,14 +533,27 @@ namespace te
     {
       if (m_actualintersection == -1 || m_actualintersection >= m_nintersections)
       {
+        // Globals
+
+        const double& rasterEnvelopeLLX =
+          AbstractPositionIterator< T >::m_raster->getGrid()->getExtent()->m_llx;
+        const double& rasterEnvelopeURX =
+          AbstractPositionIterator< T >::m_raster->getGrid()->getExtent()->m_urx;
+
         // Updates the line corresponding to the current line of the iterator
+
         if (updatecurrline)
         {
           double nexty = this->m_raster->getGrid()->gridToGeo(0, m_row).y;
 
-          m_currline->setX(0, m_polygon->getMBR()->getLowerLeft().x);
-          m_currline->setX(1, m_polygon->getMBR()->getUpperRight().x);
+          m_currline->setX(0, std::min(
+            rasterEnvelopeLLX,
+            m_polygon->getMBR()->getLowerLeft().x) );
           m_currline->setY(0, nexty);
+
+          m_currline->setX(1, std::max(
+            rasterEnvelopeURX,
+            m_polygon->getMBR()->getUpperRight().x ) );
           m_currline->setY(1, nexty);
         }
 
@@ -566,8 +584,10 @@ namespace te
           try
           {
             // in some cases the intersection presents an unhandled exception, in this case we do not paint the current line
-            
             // Transverse the segments of the tile retrieving the intersection between them and the current line
+
+            te::gm::LineString* lineStrPtr = 0;
+
             for (std::size_t i = 0; i < currentTilePtr->size(); i++) 
             {
               assert((*currentTilePtr)[i].first < m_polygon->getNumRings());
@@ -602,16 +622,16 @@ namespace te
                   if( singleGeomsPtrs[ singleGeomsPtrsIdx ]->getGeomTypeId() == 
                     te::gm::PointType )
                   {
-                    intersectionPoints.push_back( (te::gm::Point*)
-                      singleGeomsPtrs[ singleGeomsPtrsIdx ]->clone() );
+                    intersectionPoints.push_back( (te::gm::Point*)(
+                      singleGeomsPtrs[ singleGeomsPtrsIdx ]->clone() ) );
                   }
                   else if( singleGeomsPtrs[ singleGeomsPtrsIdx ]->getGeomTypeId() == 
                     te::gm::LineStringType )
                   {
-                    intersectionPoints.push_back( ((te::gm::LineString*)
-                      singleGeomsPtrs[ singleGeomsPtrsIdx ])->getStartPoint() );
-                    intersectionPoints.push_back( ((te::gm::LineString*)
-                      singleGeomsPtrs[ singleGeomsPtrsIdx ])->getEndPoint() );
+                    lineStrPtr = ((te::gm::LineString*) singleGeomsPtrs[
+                      singleGeomsPtrsIdx ]);
+                    intersectionPoints.push_back( lineStrPtr->getStartPoint() );
+                    intersectionPoints.push_back( lineStrPtr->getEndPoint() );
                   }
                 }
               }
@@ -646,41 +666,43 @@ namespace te
             intersectionPoints.clear();
           }
         }
-        
+
         // Removing duplicated points
-        
-        std::size_t positionBegin = 0;
-        std::size_t positionEnd = 0;
-        std::vector<te::gm::Point*> intersectionPointsAux = intersectionPoints;
-        
-        intersectionPoints.clear();
-        
-        while( positionBegin < intersectionPointsAux.size() )  
+
         {
-          if( intersectionPointsAux[positionBegin] )
+          std::size_t positionBegin = 0;
+          std::size_t positionEnd = 0;
+          std::vector<te::gm::Point*> intersectionPointsAux = intersectionPoints;
+
+          intersectionPoints.clear();
+
+          while( positionBegin < intersectionPointsAux.size() )
           {
-            positionEnd = positionBegin + 1;
-            
-            while( positionEnd < intersectionPointsAux.size() )
+            if( intersectionPointsAux[positionBegin] )
             {
-              if( 
-                  ( intersectionPointsAux[positionEnd] != 0 )
-                  &&
-                  intersectionPointsAux[positionBegin]->equals(
-                    intersectionPointsAux[positionEnd], true)
-                )
+              positionEnd = positionBegin + 1;
+
+              while( positionEnd < intersectionPointsAux.size() )
               {
-                delete intersectionPointsAux[positionEnd];
-                intersectionPointsAux[positionEnd] = 0;
+                if(
+                    ( intersectionPointsAux[positionEnd] != 0 )
+                    &&
+                    intersectionPointsAux[positionBegin]->equals(
+                      intersectionPointsAux[positionEnd], true)
+                  )
+                {
+                  delete intersectionPointsAux[positionEnd];
+                  intersectionPointsAux[positionEnd] = 0;
+                }
+
+                positionEnd++;
               }
-              
-              positionEnd++;
+
+              intersectionPoints.push_back( intersectionPointsAux[positionBegin] );
             }
-            
-            intersectionPoints.push_back( intersectionPointsAux[positionBegin] );
+
+            ++positionBegin;
           }
-          
-          ++positionBegin;
         }
         
         // Sort the intersection points through its Y coordinates (column)
@@ -690,8 +712,8 @@ namespace te
         // Using the intersection points, build a vector of coordinates (columns) with the start and
         // end column of the current line for each stretch
         
-        positionBegin = 0;
-        positionEnd = 0;
+        std::size_t positionBegin = 0;
+        std::size_t positionEnd = 0;
         int startingCol = 0;
         int endingCol = 0;
         double startingX = 0;

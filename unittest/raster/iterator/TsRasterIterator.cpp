@@ -418,4 +418,99 @@ BOOST_AUTO_TEST_CASE (polygonIterator2_test)
     Copy2DiskRaster( *rasterPointer, "polygonIterator2_test.tif" );
 }
 
+BOOST_AUTO_TEST_CASE (polygonIterator2_outsidepol_test)
+{
+    boost::shared_ptr< te::rst::Raster > rasterPointer;
+    {
+      const unsigned int nLines = 3;
+      const unsigned int nCols = 3;
+
+      std::vector< te::rst::BandProperty * > bandsProps;
+      bandsProps.push_back( new te::rst::BandProperty( 0,
+          te::dt::UCHAR_TYPE ) );
+      bandsProps[ 0 ]->m_noDataValue = 0;
+
+      rasterPointer.reset( te::rst::RasterFactory::make( "MEM",
+        new te::rst::Grid( nCols, nLines ), bandsProps,
+        std::map< std::string, std::string >(), 0, 0 ) );
+
+      unsigned int band = 0;
+      unsigned int line = 0;
+      unsigned int col = 0;
+
+      for( line = 0 ; line < nLines ; ++line )
+      {
+        for( col = 0 ; col < nCols ; ++col )
+        {
+          rasterPointer->setValue( col, line, 0, band );
+        }
+      }
+    }
+
+    std::vector<te::gm::Polygon* > polVector;
+
+    std::auto_ptr< te::gm::Polygon > internalPol_1( new te::gm::Polygon(0, te::gm::PolygonType,
+      rasterPointer->getSRID()) );
+    te::gm::LinearRing* l1 = createSquare(0, 0, 2.0, rasterPointer->getSRID());
+    internalPol_1->add(l1);
+    polVector.push_back(internalPol_1.get());
+
+    std::auto_ptr< te::gm::Polygon > internalPol_2( new te::gm::Polygon(0, te::gm::PolygonType,
+      rasterPointer->getSRID()) );
+    te::gm::LinearRing* l2 = createSquare(
+      rasterPointer->getGrid()->getExtent()->m_urx,
+      rasterPointer->getGrid()->getExtent()->m_lly,
+      2.0, rasterPointer->getSRID());
+    internalPol_2->add(l2);
+    polVector.push_back(internalPol_2.get());
+
+    std::auto_ptr< te::gm::Polygon > internalPol_3( new te::gm::Polygon(0, te::gm::PolygonType,
+      rasterPointer->getSRID()) );
+    te::gm::LinearRing* l3 = createSquare(
+      rasterPointer->getGrid()->getExtent()->getCenter().x,
+      rasterPointer->getGrid()->getExtent()->getCenter().y,
+      4.0, rasterPointer->getSRID());
+    internalPol_3->add(l3);
+    polVector.push_back(internalPol_3.get());
+
+    std::auto_ptr< te::gm::Polygon > internalPol_4( new te::gm::Polygon(0, te::gm::PolygonType,
+      rasterPointer->getSRID()) );
+    te::gm::LinearRing* l4 = createSquare(
+      rasterPointer->getGrid()->getExtent()->m_urx +
+      rasterPointer->getGrid()->getResolutionX(),
+      rasterPointer->getGrid()->getExtent()->m_ury +
+      rasterPointer->getGrid()->getResolutionY(),
+      2.0, rasterPointer->getSRID());
+    internalPol_4->add(l4);
+    polVector.push_back(internalPol_4.get());
+
+    Copy2DiskShp( polVector, "polygonIterator2_outsidepol_test.shp" );
+
+    double pixelValueCounter = 0;
+
+    for (int countPol = 0; countPol < polVector.size(); countPol++)
+    {
+      te::rst::PolygonIterator< double > it =
+          te::rst::PolygonIterator< double >::begin(rasterPointer.get(),
+          polVector[countPol]);
+      const te::rst::PolygonIterator< double > itEnd =
+          te::rst::PolygonIterator< double >::end(rasterPointer.get(),
+          polVector[countPol]);
+
+      int col = 0;
+      int row = 0;
+      while (it != itEnd)
+      {
+          if (it[0] == 0)
+              rasterPointer->setValue(it.getColumn(), it.getRow(), (countPol + 1), 0);
+          else
+              rasterPointer->setValue(it.getColumn(), it.getRow(), 15, 0);
+
+          ++it;
+      }
+    }
+
+    Copy2DiskRaster( *rasterPointer, "polygonIterator2_outsidepol_test.tif" );
+}
+
 BOOST_AUTO_TEST_SUITE_END ()
