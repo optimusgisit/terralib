@@ -30,6 +30,7 @@
 #include "dataset/AttributeConverterManager.h"
 #include "dataset/AttributeConverters.h"
 #include "datasource/ConnectionPoolManager.h"
+#include "datasource/DataSourceManager.h"
 #include "Config.h"
 #include "Module.h"
 
@@ -47,6 +48,8 @@ te::da::Module::Module()
 
 // initializes the ConnectionPoolManager singleton
   ConnectionPoolManager::getInstance();
+
+  DataSourceManager::getInstance();
 }
 
 te::da::Module::~Module()

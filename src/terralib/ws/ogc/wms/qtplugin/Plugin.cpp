@@ -111,7 +111,7 @@ void te::ws::ogc::wms::qtplugin::Plugin::shutdown()
   te::da::DataSourceInfoManager::getInstance().removeByType("WMS2");
   te::qt::widgets::DataSourceTypeManager::getInstance().remove("WMS2");
 
-  TE_LOG_TRACE(TE_TR("TerraLib Qt OGC Web Ḿap Service (WMS) widget shutdown!"));
+  TE_LOG_TRACE(TE_TR("TerraLib Qt OGC Web Map Service (WMS) widget shutdown!"));
 
   m_initialized = false;
 

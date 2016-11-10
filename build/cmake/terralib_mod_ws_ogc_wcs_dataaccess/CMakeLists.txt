@@ -23,9 +23,6 @@
 #  Author: Vinicius Campanha
 #
 
-include_directories(${Boost_INCLUDE_DIR}
-                    ${GDAL_INCLUDE_DIR})
-					
 if(WIN32)
   add_definitions(-DTEWSWCSDATAACCESSDLL)
 endif()
@@ -41,11 +38,10 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 add_library(terralib_mod_ws_ogc_wcs_dataaccess SHARED ${TERRALIB_SRC_FILES} ${TERRALIB_HDR_FILES})
 
 target_link_libraries(terralib_mod_ws_ogc_wcs_dataaccess terralib_mod_common
+                                                         terralib_mod_core
                                                          terralib_mod_dataaccess
                                                          terralib_mod_datatype
-                                                         
-                                                         terralib_mod_ws_ogc_wcs_client
-														 ${GDAL_LIBRARY})
+                                                         terralib_mod_ws_ogc_wcs_client)
 
 set_target_properties(terralib_mod_ws_ogc_wcs_dataaccess
                       PROPERTIES VERSION ${TERRALIB_VERSION_MAJOR}.${TERRALIB_VERSION_MINOR}
