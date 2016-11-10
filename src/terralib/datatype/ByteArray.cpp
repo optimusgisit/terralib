@@ -24,7 +24,7 @@
 */
 
 // TerraLib
-#include "../common/HexUtils.h"
+#include "../core/utils/HexUtils.h"
 #include "ByteArray.h"
 
 // STL
@@ -194,7 +194,7 @@ std::string te::dt::ByteArray::toString() const
   if(m_bytesOccupied == 0)
     return std::string("");
 
-  char* hexStr = te::common::Binary2Hex(m_data, m_bytesOccupied);
+  char* hexStr = te::core::Binary2Hex(m_data, m_bytesOccupied);
 
   std::string result(hexStr);
 

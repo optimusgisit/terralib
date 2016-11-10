@@ -24,7 +24,7 @@
 */
 
 // TerraLib
-#include "../../common/HexUtils.h"
+#include "../../core/utils/HexUtils.h"
 #include "../../common/StringUtils.h"
 #include "../../datatype/AbstractData.h"
 #include "../../datatype/Array.h"

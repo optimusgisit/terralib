@@ -18,11 +18,11 @@
  */
 
 /*!
-  \file terralib/common/HexUtils.h
+  \file terralib/core/utils/HexUtils.h
 
   \brief This file contains several utilities functions for dealing with HEX strings.
 
-  \ingroup common
+  \ingroup core
 */
 
 #ifndef __TERRALIB_COMMON_INTERNAL_HEXUTILS_H
@@ -35,7 +35,7 @@
 
 namespace te
 {
-  namespace common
+  namespace core
   {
     /*!
       \brief It returns the decimal value in a char from a given hex value (for example: 'A' => 10, '8' => 8).
