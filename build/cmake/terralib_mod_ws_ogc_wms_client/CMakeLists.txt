@@ -39,11 +39,9 @@ set(CMAKE_INCLUDE_CURRENT_DIR ON)
 
 add_library(terralib_mod_ws_ogc_wms_client SHARED ${TERRALIB_SRC_FILES} ${TERRALIB_HDR_FILES})
 
-target_link_libraries(terralib_mod_ws_ogc_wms_client terralib_mod_dataaccess
-                                                      terralib_mod_xml
+target_link_libraries(terralib_mod_ws_ogc_wms_client  terralib_mod_xml
                                                       terralib_mod_common
-                                                      terralib_mod_ws_core
-                                                      )
+                                                      terralib_mod_ws_core)
 
 install(TARGETS terralib_mod_ws_ogc_wms_client
         EXPORT terralib-targets
