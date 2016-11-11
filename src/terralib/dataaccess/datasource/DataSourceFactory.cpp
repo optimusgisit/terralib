@@ -61,7 +61,7 @@ std::unique_ptr<te::da::DataSource> te::da::DataSourceFactory::make(const std::s
     ds = make(driver, dsURI);
   }
   
-  return std::move(ds);
+  return ds;
 }
 
 bool te::da::DataSourceFactory::find(const std::string& dsType)
