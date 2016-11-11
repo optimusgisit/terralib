@@ -36,7 +36,8 @@ file(GLOB TERRALIB_HDR_FILES ${TERRALIB_ABSOLUTE_ROOT_DIR}/src/terralib/color/*.
 
 add_library(terralib_mod_color SHARED ${TERRALIB_SRC_FILES} ${TERRALIB_HDR_FILES})
 
-target_link_libraries(terralib_mod_color terralib_mod_common)
+target_link_libraries(terralib_mod_color terralib_mod_common
+                                         terralib_mod_core)
 
 set_target_properties(terralib_mod_color
                       PROPERTIES VERSION ${TERRALIB_VERSION_MAJOR}.${TERRALIB_VERSION_MINOR}

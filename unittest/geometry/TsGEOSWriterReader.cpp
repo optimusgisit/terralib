@@ -28,6 +28,7 @@
 #include <terralib/geometry.h>
 #include <terralib/geometry/GEOSWriter.h>
 #include <terralib/geometry/GEOSReader.h>
+#include <terralib/core/utils/HexUtils.h>
 
 // STL
 #include <cstdio>
@@ -74,13 +75,13 @@ void TsGEOSWriterReader::tcCreateGeometriesAndApplyReadTests()
     CPPUNIT_ASSERT(g2->equals(g1));
 
 // checking hex and binary 
-    char* hwkb1 = te::common::Binary2Hex(wkb1, wkb1size);
+    char* hwkb1 = te::core::Binary2Hex(wkb1, wkb1size);
     std::size_t wkb2size = g2->getWkbSize();
     CPPUNIT_ASSERT(wkb1size == wkb2size);
 
     char* wkb2 = new char[wkb2size];
     g2->getWkb(wkb2,te::common::Globals::sm_machineByteOrder);
-    char* hwkb2 = te::common::Binary2Hex(wkb2, wkb2size);
+    char* hwkb2 = te::core::Binary2Hex(wkb2, wkb2size);
 
     CPPUNIT_ASSERT(strcmp(hwkb1, hwkb2) == 0);
     CPPUNIT_ASSERT(memcmp(wkb1, wkb2, wkb2size) == 0);
