@@ -130,7 +130,6 @@ std::vector<std::string> te::vp::GetDissolveProps(const std::map<std::string, te
 std::map<te::dt::Property*, std::vector<te::stat::StatisticalSummary> > te::vp::GetSummaryProps(const std::map<std::string, te::dt::AbstractData*>& specificParams)
 {
   std::map<te::dt::Property*, std::vector<te::stat::StatisticalSummary> > statisticalSummaryMap;
-  std::vector<std::string> statisticalSummaryVec;
 
   if (specificParams.empty())
     return statisticalSummaryMap;

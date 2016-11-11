@@ -45,23 +45,33 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
   std::vector<te::vp::InputParams> inputParams =  mainParams->getInputParams();
 
-  te::da::DataSourcePtr firstSource       = inputParams[0].m_inputDataSource;
-  te::da::DataSetType* firstDt            = inputParams[0].m_inputDataSetType;
-  te::da::DataSet* firstDs                = inputParams[0].m_inputDataSet;
-  te::gm::GeometryProperty* firstGeomProp = dynamic_cast<te::gm::GeometryProperty*>(te::da::GetFirstSpatialProperty(firstDt));
+  te::da::DataSetType* firstDt = inputParams[0].m_inputDataSetType;
+  te::da::DataSet* firstDs = inputParams[0].m_inputDataSet;
+  te::gm::GeometryProperty* firstGeomProp =
+      dynamic_cast<te::gm::GeometryProperty*>(
+          te::da::GetFirstSpatialProperty(firstDt));
 
-  te::da::DataSourcePtr secondSource       = inputParams[1].m_inputDataSource;
-  te::da::DataSetType* secondDt            = inputParams[1].m_inputDataSetType;
-  te::da::DataSet* secondDs                = inputParams[1].m_inputDataSet;
-  te::gm::GeometryProperty* secondGeomProp = dynamic_cast<te::gm::GeometryProperty*>(te::da::GetFirstSpatialProperty(secondDt));
+  te::da::DataSetType* secondDt = inputParams[1].m_inputDataSetType;
+  te::da::DataSet* secondDs = inputParams[1].m_inputDataSet;
+  te::gm::GeometryProperty* secondGeomProp =
+      dynamic_cast<te::gm::GeometryProperty*>(
+          te::da::GetFirstSpatialProperty(secondDt));
 
-  std::map<std::string, te::dt::AbstractData*> specificParams = mainParams->getSpecificParams();
+  std::map<std::string, te::dt::AbstractData*> specificParams =
+      mainParams->getSpecificParams();
 
-  te::sam::rtree::Index<std::size_t, 8>* rtreeSecond = te::vp::GetRtree(secondDs);
+  te::sam::rtree::Index<std::size_t, 8>* rtreeSecond =
+      te::vp::GetRtree(secondDs);
 
-  std::auto_ptr<te::da::DataSetType> outputDataSetType(getOutputDataSetType(mainParams));
-  std::auto_ptr<te::mem::DataSet>    outputDataSet(new te::mem::DataSet(outputDataSetType.get()));
-  te::gm::GeometryProperty*          outputGeometryProperty = te::da::GetFirstGeomProperty(outputDataSetType.get());
+  std::unique_ptr<te::da::DataSetType> outputDataSetType(
+      getOutputDataSetType(mainParams));
+
+  std::unique_ptr<te::mem::DataSet> outputDataSet(
+      new te::mem::DataSet(outputDataSetType.get()));
+
+  te::gm::GeometryProperty* outputGeometryProperty =
+      te::da::GetFirstGeomProperty(outputDataSetType.get());
+
   te::da::DataSourcePtr outputSource = mainParams->getOutputDataSource();
 
   bool isCollection = this->isCollection(specificParams);
@@ -70,7 +80,8 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
   while (firstDs->moveNext())
   {
-    std::auto_ptr<te::gm::Geometry> firstCurrGeom = firstDs->getGeometry(firstGeomProp->getName());
+    std::auto_ptr<te::gm::Geometry> firstCurrGeom =
+        firstDs->getGeometry(firstGeomProp->getName());
 
     std::vector<std::size_t> report;
     rtreeSecond->search(*firstCurrGeom->getMBR(), report);
@@ -79,9 +90,11 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
     {
       secondDs->move(report[i]);
 
-      std::auto_ptr<te::gm::Geometry> secondCurrGeom = secondDs->getGeometry(secondGeomProp->getName());
+      std::unique_ptr<te::gm::Geometry> secondCurrGeom =
+          std::move(secondDs->getGeometry(secondGeomProp->getName()));
 
-      if (firstCurrGeom->intersects(secondCurrGeom.get()) && !firstCurrGeom->touches(secondCurrGeom.get()))
+      if(firstCurrGeom->intersects(secondCurrGeom.get()) &&
+         !firstCurrGeom->touches(secondCurrGeom.get()))
       {
         te::gm::Geometry* geomResult = 0;
 
@@ -100,9 +113,12 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
             continue;
           }
 
-          std::auto_ptr<te::mem::DataSetItem> item(new te::mem::DataSetItem(outputDataSet.get()));
+          std::unique_ptr<te::mem::DataSetItem> item(
+              new te::mem::DataSetItem(outputDataSet.get()));
 
-          for (std::map<std::string, std::string>::iterator it = m_firstAttrNameMap.begin(); it != m_firstAttrNameMap.end(); ++it)
+          for(std::map<std::string, std::string>::iterator it =
+                  m_firstAttrNameMap.begin();
+              it != m_firstAttrNameMap.end(); ++it)
           {
             if (!firstDs->isNull(it->second))
               item->setValue(it->first, firstDs->getValue(it->second).release());
@@ -110,10 +126,13 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
           if (o == 1)
           {
-            for (std::map<std::string, std::string>::iterator it = m_secondAttrNameMap.begin(); it != m_secondAttrNameMap.end(); ++it)
+            for(std::map<std::string, std::string>::iterator it =
+                    m_secondAttrNameMap.begin();
+                it != m_secondAttrNameMap.end(); ++it)
             {
               if (!secondDs->isNull(it->second))
-                item->setValue(it->first, secondDs->getValue(it->second).release());
+                item->setValue(it->first,
+                               secondDs->getValue(it->second).release());
             }
           }
 
@@ -128,11 +147,18 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
             for (std::size_t g = 0; g < geomVec.size(); ++g)
             {
-              if (!te::vp::IsMultiType(geomVec[g]->getGeomTypeId()) && isCollection)
+              if(!te::vp::IsMultiType(geomVec[g]->getGeomTypeId()) &&
+                 isCollection)
                 geomVec[g] = te::vp::SetGeomAsMulti(geomVec[g]);
 
-              std::auto_ptr<te::mem::DataSetItem> currentItem = item->clone();
-              currentItem->setGeometry(outputGeometryProperty->getName(), geomVec[g]);
+              std::unique_ptr<te::mem::DataSetItem> currentItem = item->clone();
+
+              if(geomVec[g]->getGeomTypeId() !=
+                 outputGeometryProperty->getGeometryType())
+                 continue;
+
+              currentItem->setGeometry(outputGeometryProperty->getName(),
+                                       geomVec[g]);
 
               outputDataSet->add(currentItem.release());
             }
@@ -147,7 +173,8 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
   secondDs->moveBeforeFirst();
   while (secondDs->moveNext())
   {
-    std::auto_ptr<te::gm::Geometry> secondCurrGeom = secondDs->getGeometry(secondGeomProp->getName());
+    std::unique_ptr<te::gm::Geometry> secondCurrGeom =
+        std::move(secondDs->getGeometry(secondGeomProp->getName()));
 
     std::vector<std::size_t> report;
     rtreeFirst->search(*secondCurrGeom->getMBR(), report);
@@ -156,9 +183,11 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
     {
       firstDs->move(report[i]);
 
-      std::auto_ptr<te::gm::Geometry> firstCurrGeom = firstDs->getGeometry(firstGeomProp->getName());
+      std::unique_ptr<te::gm::Geometry> firstCurrGeom =
+          std::move(firstDs->getGeometry(firstGeomProp->getName()));
 
-      if (secondCurrGeom->intersects(firstCurrGeom.get()) && !secondCurrGeom->touches(firstCurrGeom.get()))
+      if(secondCurrGeom->intersects(firstCurrGeom.get()) &&
+         !secondCurrGeom->touches(firstCurrGeom.get()))
       {
         te::gm::Geometry* geomResult = 0;
 
@@ -172,9 +201,12 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
           continue;
         }
 
-        std::auto_ptr<te::mem::DataSetItem> item(new te::mem::DataSetItem(outputDataSet.get()));
+        std::unique_ptr<te::mem::DataSetItem> item(
+            new te::mem::DataSetItem(outputDataSet.get()));
 
-        for (std::map<std::string, std::string>::iterator it = m_secondAttrNameMap.begin(); it != m_secondAttrNameMap.end(); ++it)
+        for(std::map<std::string, std::string>::iterator it =
+                m_secondAttrNameMap.begin();
+            it != m_secondAttrNameMap.end(); ++it)
         {
           if (!secondDs->isNull(it->second))
             item->setValue(it->first, secondDs->getValue(it->second).release());
@@ -191,11 +223,13 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
           for (std::size_t g = 0; g < geomVec.size(); ++g)
           {
-            if (!te::vp::IsMultiType(geomVec[g]->getGeomTypeId()) && isCollection)
+            if(!te::vp::IsMultiType(geomVec[g]->getGeomTypeId()) &&
+               isCollection)
               geomVec[g] = te::vp::SetGeomAsMulti(geomVec[g]);
 
-            std::auto_ptr<te::mem::DataSetItem> currentItem = item->clone();
-            currentItem->setGeometry(outputGeometryProperty->getName(), geomVec[g]);
+            std::unique_ptr<te::mem::DataSetItem> currentItem = item->clone();
+            currentItem->setGeometry(outputGeometryProperty->getName(),
+                                     geomVec[g]);
 
             outputDataSet->add(currentItem.release());
           }
@@ -206,49 +240,58 @@ bool te::vp::Union::executeMemory(te::vp::AlgorithmParams* mainParams)
 
   outputDataSet->moveBeforeFirst();
 
-  std::auto_ptr<te::da::DataSet> dataSetPrepared = PrepareAdd(outputDataSet.release(), outputDataSetType.get());
+  std::unique_ptr<te::da::DataSet> dataSetPrepared =
+      std::move(PrepareAdd(outputDataSet.release(), outputDataSetType.get()));
 
   if (!dataSetPrepared.get())
-    throw te::common::Exception(TE_TR("Output DataSet was not prepared to save."));
+    throw te::common::Exception(
+        TE_TR("Output DataSet was not prepared to save."));
 
   if (dataSetPrepared->size() == 0)
-    throw te::common::Exception("The resultant layer is empty!");
+    throw te::common::Exception(TE_TR("The resultant layer is empty!"));
 
-  te::vp::Save(outputSource.get(), dataSetPrepared.get(), outputDataSetType.get());
+  te::vp::Save(outputSource.get(), dataSetPrepared.get(),
+               outputDataSetType.get());
 
   return true;
 }
 
-bool te::vp::Union::isCollection(const std::map<std::string, te::dt::AbstractData*>& specificParams)
+bool te::vp::Union::isCollection(
+    const std::map<std::string, te::dt::AbstractData*>& specificParams)
 {
   bool isCollection = false;
 
-  for (std::map<std::string, te::dt::AbstractData*>::const_iterator it = specificParams.begin(); it != specificParams.end(); ++it)
+  for(std::map<std::string, te::dt::AbstractData*>::const_iterator it =
+          specificParams.begin();
+      it != specificParams.end(); ++it)
   {
-    if (it->first != "IS_COLLECTION")
+    if(it->first != "IS_COLLECTION")
     {
       continue;
     }
 
     te::dt::SimpleData<bool, te::dt::BOOLEAN_TYPE>* sd =
-      dynamic_cast<te::dt::SimpleData<bool, te::dt::BOOLEAN_TYPE >* >(it->second);
+        dynamic_cast<te::dt::SimpleData<bool, te::dt::BOOLEAN_TYPE>*>(
+            it->second);
 
-    if (sd)
+    if(sd)
       isCollection = sd->getValue();
   }
 
   return isCollection;
 }
 
-std::vector<std::pair<std::string, std::string> > te::vp::Union::getProperties(const std::map<std::string, te::dt::AbstractData*>& specificParams)
+std::vector<std::pair<std::string, std::string> > te::vp::Union::getProperties(
+    const std::map<std::string, te::dt::AbstractData*>& specificParams)
 {
-  std::map<std::string, te::dt::AbstractData*>::const_iterator it = specificParams.begin();
+  std::map<std::string, te::dt::AbstractData*>::const_iterator it =
+      specificParams.begin();
 
   std::vector<std::pair<std::string, std::string> > propNames;
 
-  while (it != specificParams.end())
+  while(it != specificParams.end())
   {
-    if (it->first != "ATTRIBUTES")
+    if(it->first != "ATTRIBUTES")
     {
       ++it;
       continue;
@@ -256,9 +299,11 @@ std::vector<std::pair<std::string, std::string> > te::vp::Union::getProperties(c
 
     te::dt::AbstractData* abData = it->second;
 
-    te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >* cd = dynamic_cast<te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >* >(abData);
+    te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >*
+        cd = dynamic_cast<te::vp::ComplexData<
+            std::vector<std::pair<std::string, std::string> > >*>(abData);
 
-    if (cd)
+    if(cd)
       propNames = cd->getValue();
 
     ++it;
@@ -272,55 +317,68 @@ bool te::vp::Union::executeQuery(te::vp::AlgorithmParams* mainParams)
   return false;
 }
 
-te::da::DataSetType* te::vp::Union::getOutputDataSetType(te::vp::AlgorithmParams* mainParams)
+te::da::DataSetType* te::vp::Union::getOutputDataSetType(
+    te::vp::AlgorithmParams* mainParams)
 {
   te::vp::InputParams firstInputParams = mainParams->getInputParams()[0];
   te::vp::InputParams secondInputParams = mainParams->getInputParams()[1];
 
   std::string outputDataSetName = mainParams->getOutputDataSetName();
 
-  const std::map<std::string, te::dt::AbstractData*> specificParams = mainParams->getSpecificParams();
+  const std::map<std::string, te::dt::AbstractData*> specificParams =
+      mainParams->getSpecificParams();
 
   bool isCollection = this->isCollection(specificParams);
 
-  te::da::DataSetType*      firstDataSetType = firstInputParams.m_inputDataSetType;
-  te::gm::GeometryProperty* firstGeometryProperty = te::da::GetFirstGeomProperty(firstDataSetType);
+  te::da::DataSetType* firstDataSetType = firstInputParams.m_inputDataSetType;
 
-  te::da::DataSetType*      secondDataSetType = secondInputParams.m_inputDataSetType;
-  te::gm::GeometryProperty* secondGeometryProperty = te::da::GetFirstGeomProperty(secondDataSetType);
+  te::gm::GeometryProperty* firstGeometryProperty =
+      te::da::GetFirstGeomProperty(firstDataSetType);
 
-  std::vector<te::dt::Property*> firstSelectedProperties = getFirstSelectedProperties(firstDataSetType, specificParams);
-  std::vector<te::dt::Property*> secondSelectedProperties = getSecondSelectedProperties(secondDataSetType, specificParams);
+  te::da::DataSetType* secondDataSetType = secondInputParams.m_inputDataSetType;
 
-  te::da::DataSetType* outputDataSetType = new te::da::DataSetType(outputDataSetName);
+  te::gm::GeometryProperty* secondGeometryProperty =
+      te::da::GetFirstGeomProperty(secondDataSetType);
+
+  std::vector<te::dt::Property*> firstSelectedProperties =
+      getFirstSelectedProperties(firstDataSetType, specificParams);
+
+  std::vector<te::dt::Property*> secondSelectedProperties =
+      getSecondSelectedProperties(secondDataSetType, specificParams);
+
+  te::da::DataSetType* outputDataSetType =
+      new te::da::DataSetType(outputDataSetName);
 
   std::vector<std::string> attrNamesAux;
 
-  if (mainParams->getOutputDataSource()->getType() != "OGR")
+  if(mainParams->getOutputDataSource()->getType() != "OGR")
   {
-    te::dt::SimpleProperty* pkProperty = new te::dt::SimpleProperty(outputDataSetName + "_id", te::dt::INT32_TYPE);
+    te::dt::SimpleProperty* pkProperty = new te::dt::SimpleProperty(
+        outputDataSetName + "_id", te::dt::INT32_TYPE);
     pkProperty->setAutoNumber(true);
     outputDataSetType->add(pkProperty);
 
-    te::da::PrimaryKey* pk = new te::da::PrimaryKey(outputDataSetName + "_pk", outputDataSetType);
+    te::da::PrimaryKey* pk =
+        new te::da::PrimaryKey(outputDataSetName + "_pk", outputDataSetType);
     pk->add(pkProperty);
     outputDataSetType->setPrimaryKey(pk);
   }
 
-  for (std::size_t i = 0; i < firstSelectedProperties.size(); ++i)
+  for(std::size_t i = 0; i < firstSelectedProperties.size(); ++i)
   {
     te::dt::Property* clonedProperty = firstSelectedProperties[i]->clone();
 
-    te::dt::SimpleProperty* spAux = dynamic_cast<te::dt::SimpleProperty*>(clonedProperty);
+    te::dt::SimpleProperty* spAux =
+        dynamic_cast<te::dt::SimpleProperty*>(clonedProperty);
 
-    if (spAux)
+    if(spAux)
     {
       spAux->setRequired(false);
     }
 
     std::string pName = clonedProperty->getName();
 
-    if (mainParams->getOutputDataSource()->getType() == "OGR")
+    if(mainParams->getOutputDataSource()->getType() == "OGR")
       pName = GetDistinctName(pName, attrNamesAux, 10);
     else
       pName = GetDistinctName(pName, attrNamesAux);
@@ -334,20 +392,21 @@ te::da::DataSetType* te::vp::Union::getOutputDataSetType(te::vp::AlgorithmParams
     attrNamesAux.push_back(clonedProperty->getName());
   }
 
-  for (std::size_t i = 0; i < secondSelectedProperties.size(); ++i)
+  for(std::size_t i = 0; i < secondSelectedProperties.size(); ++i)
   {
     te::dt::Property* clonedProperty = secondSelectedProperties[i]->clone();
 
-    te::dt::SimpleProperty* spAux = dynamic_cast<te::dt::SimpleProperty*>(clonedProperty);
+    te::dt::SimpleProperty* spAux =
+        dynamic_cast<te::dt::SimpleProperty*>(clonedProperty);
 
-    if (spAux)
+    if(spAux)
     {
       spAux->setRequired(false);
     }
 
     std::string pName = clonedProperty->getName();
 
-    if (mainParams->getOutputDataSource()->getType() == "OGR")
+    if(mainParams->getOutputDataSource()->getType() == "OGR")
       pName = GetDistinctName(pName, attrNamesAux, 10);
     else
       pName = GetDistinctName(pName, attrNamesAux);
@@ -361,9 +420,12 @@ te::da::DataSetType* te::vp::Union::getOutputDataSetType(te::vp::AlgorithmParams
     attrNamesAux.push_back(clonedProperty->getName());
   }
 
-  te::gm::GeometryProperty* newGeometryProperty = new te::gm::GeometryProperty("geom");
+  te::gm::GeometryProperty* newGeometryProperty =
+      new te::gm::GeometryProperty("geom");
 
-  te::gm::GeomType type = getGeomResultType(firstGeometryProperty->getGeometryType(), secondGeometryProperty->getGeometryType(), isCollection);
+  te::gm::GeomType type = getGeomResultType(
+      firstGeometryProperty->getGeometryType(),
+      secondGeometryProperty->getGeometryType(), isCollection);
   newGeometryProperty->setGeometryType(type);
 
   newGeometryProperty->setSRID(firstGeometryProperty->getSRID());
@@ -373,7 +435,9 @@ te::da::DataSetType* te::vp::Union::getOutputDataSetType(te::vp::AlgorithmParams
   return outputDataSetType;
 }
 
-te::gm::GeomType te::vp::Union::getGeomResultType(const te::gm::GeomType& firstGeom, const te::gm::GeomType& secondGeom, const bool& isCollection)
+te::gm::GeomType te::vp::Union::getGeomResultType(
+    const te::gm::GeomType& firstGeom, const te::gm::GeomType& secondGeom,
+    const bool& isCollection)
 {
   te::gm::GeomType geomType;
 
@@ -442,15 +506,18 @@ te::gm::GeomType te::vp::Union::getGeomResultType(const te::gm::GeomType& firstG
   }
 }
 
-std::vector<te::dt::Property*> te::vp::Union::getFirstSelectedProperties(const te::da::DataSetType* dataSetType, const std::map<std::string, te::dt::AbstractData*>& specificParams)
+std::vector<te::dt::Property*> te::vp::Union::getFirstSelectedProperties(
+    const te::da::DataSetType* dataSetType,
+    const std::map<std::string, te::dt::AbstractData*>& specificParams)
 {
   std::vector<te::dt::Property*> result;
 
-  std::vector<std::pair<std::string, std::string> > selectedProperties = getProperties(specificParams);
+  std::vector<std::pair<std::string, std::string> > selectedProperties =
+      getProperties(specificParams);
 
-  for (std::size_t i = 0; i < selectedProperties.size(); ++i)
+  for(std::size_t i = 0; i < selectedProperties.size(); ++i)
   {
-    if (selectedProperties[i].first == "FIRST")
+    if(selectedProperties[i].first == "FIRST")
     {
       result.push_back(dataSetType->getProperty(selectedProperties[i].second));
     }
@@ -459,15 +526,18 @@ std::vector<te::dt::Property*> te::vp::Union::getFirstSelectedProperties(const t
   return result;
 }
 
-std::vector<te::dt::Property*> te::vp::Union::getSecondSelectedProperties(const te::da::DataSetType* dataSetType, const std::map<std::string, te::dt::AbstractData*>& specificParams)
+std::vector<te::dt::Property*> te::vp::Union::getSecondSelectedProperties(
+    const te::da::DataSetType* dataSetType,
+    const std::map<std::string, te::dt::AbstractData*>& specificParams)
 {
   std::vector<te::dt::Property*> result;
 
-  std::vector<std::pair<std::string, std::string> > selectedProperties = getProperties(specificParams);
+  std::vector<std::pair<std::string, std::string> > selectedProperties =
+      getProperties(specificParams);
 
-  for (std::size_t i = 0; i < selectedProperties.size(); ++i)
+  for(std::size_t i = 0; i < selectedProperties.size(); ++i)
   {
-    if (selectedProperties[i].first == "SECOND")
+    if(selectedProperties[i].first == "SECOND")
     {
       result.push_back(dataSetType->getProperty(selectedProperties[i].second));
     }
@@ -476,18 +546,19 @@ std::vector<te::dt::Property*> te::vp::Union::getSecondSelectedProperties(const 
   return result;
 }
 
-te::gm::GeomType te::vp::Union::setGeomResultType(const te::gm::GeomType& geomType, const bool& isCollection)
+te::gm::GeomType te::vp::Union::setGeomResultType(
+    const te::gm::GeomType& geomType, const bool& isCollection)
 {
-  if (isCollection)
+  if(isCollection)
   {
-    if (te::vp::IsMultiType(geomType))
+    if(te::vp::IsMultiType(geomType))
       return geomType;
     else
       return te::vp::GetMultiType(geomType);
   }
   else
   {
-    if (te::vp::IsMultiType(geomType))
+    if(te::vp::IsMultiType(geomType))
       return te::vp::GetSimpleType(geomType);
     else
       return geomType;
@@ -497,31 +568,33 @@ te::gm::GeomType te::vp::Union::setGeomResultType(const te::gm::GeomType& geomTy
 te::gm::Geometry* te::vp::Union::setGeomAsMulti(te::gm::Geometry* geom)
 {
   // note that this has effect only in Points, Lines and Polygons
-  switch (geom->getGeomTypeId())
+  switch(geom->getGeomTypeId())
   {
     case te::gm::PointType:
     {
-      te::gm::MultiPoint* geomColl = new te::gm::MultiPoint(0, te::gm::MultiPointType, geom->getSRID());
+      te::gm::MultiPoint* geomColl =
+          new te::gm::MultiPoint(0, te::gm::MultiPointType, geom->getSRID());
       geomColl->add(geom);
-      
+
       return geomColl;
     }
     case te::gm::LineStringType:
     {
-      te::gm::MultiLineString* geomColl = new te::gm::MultiLineString(0, te::gm::MultiLineStringType, geom->getSRID());
+      te::gm::MultiLineString* geomColl = new te::gm::MultiLineString(
+          0, te::gm::MultiLineStringType, geom->getSRID());
       geomColl->add(geom);
-      
+
       return geomColl;
     }
     case te::gm::PolygonType:
     {
-      te::gm::MultiPolygon* geomColl = new te::gm::MultiPolygon(0, te::gm::MultiPolygonType, geom->getSRID());
+      te::gm::MultiPolygon* geomColl = new te::gm::MultiPolygon(
+          0, te::gm::MultiPolygonType, geom->getSRID());
       geomColl->add(geom);
-      
+
       return geomColl;
     }
     default:
-       return geom;
+      return geom;
   }
 }
-

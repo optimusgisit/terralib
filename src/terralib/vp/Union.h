@@ -54,22 +54,31 @@ namespace te
       bool executeQuery(te::vp::AlgorithmParams* mainParams);
 
     protected:
+     std::vector<std::pair<std::string, std::string> > getProperties(
+         const std::map<std::string, te::dt::AbstractData*>& specificParams);
 
-      std::vector<std::pair<std::string, std::string> > getProperties(const std::map<std::string, te::dt::AbstractData*>& specificParams);
+     bool isCollection(
+         const std::map<std::string, te::dt::AbstractData*>& specificParams);
 
-      bool isCollection(const std::map<std::string, te::dt::AbstractData*>& specificParams);
+     te::da::DataSetType* getOutputDataSetType(
+         te::vp::AlgorithmParams* mainParams);
 
-      te::da::DataSetType* getOutputDataSetType(te::vp::AlgorithmParams* mainParams);
+     te::gm::GeomType setGeomResultType(const te::gm::GeomType& geomType,
+                                        const bool& isCollection);
 
-      te::gm::GeomType setGeomResultType(const te::gm::GeomType& geomType, const bool& isCollection);
+     te::gm::Geometry* setGeomAsMulti(te::gm::Geometry* geom);
 
-      te::gm::Geometry* setGeomAsMulti(te::gm::Geometry* geom);
+     std::vector<te::dt::Property*> getFirstSelectedProperties(
+         const te::da::DataSetType* dataSetType,
+         const std::map<std::string, te::dt::AbstractData*>& specificParams);
 
-      std::vector<te::dt::Property*> getFirstSelectedProperties(const te::da::DataSetType* dataSetType, const std::map<std::string, te::dt::AbstractData*>& specificParams);
+     std::vector<te::dt::Property*> getSecondSelectedProperties(
+         const te::da::DataSetType* dataSetType,
+         const std::map<std::string, te::dt::AbstractData*>& specificParams);
 
-      std::vector<te::dt::Property*> getSecondSelectedProperties(const te::da::DataSetType* dataSetType, const std::map<std::string, te::dt::AbstractData*>& specificParams);
-
-      te::gm::GeomType getGeomResultType(const te::gm::GeomType& firstGeom, const te::gm::GeomType& secondGeom, const bool& isCollection);
+     te::gm::GeomType getGeomResultType(const te::gm::GeomType& firstGeom,
+                                        const te::gm::GeomType& secondGeom,
+                                        const bool& isCollection);
 
     private:
 
