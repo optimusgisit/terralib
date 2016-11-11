@@ -109,10 +109,6 @@ namespace te
 
         //@}
 
-      signals:
-
-        void splitFinished(te::da::ObjectIdSet& objIdResultingPolygons, const std::string& layerId);
-
       private:
 
         double m_tol;

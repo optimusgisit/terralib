@@ -456,7 +456,7 @@ std::vector<std::string> te::qt::af::GetPluginsFiles()
 
   QStringList filters;
 
-  filters << "*.teplg";
+  filters << "*.teplg.json";
 
   QDir d(te::core::FindInTerraLibPath("share/terralib/plugins").c_str());
 

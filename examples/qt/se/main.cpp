@@ -50,12 +50,12 @@ void LoadGDALModule()
     //info.m_resources.push_back(rsc);
     //
     //te::plugin::PluginManager::getInstance().load(info);
-    //te::plugin::PluginInfo* info = te::core::JSONPluginInfoSerializer(TE_PLUGINS_PATH + std::string("/te.da.gdal.teplg"));
+    //te::plugin::PluginInfo* info = te::core::JSONPluginInfoSerializer(TE_PLUGINS_PATH + std::string("/te.da.gdal.teplg.json"));
     
     std::string plugins_path = te::core::FindInTerraLibPath("share/terralib/plugins");
 
 #ifdef TERRALIB_MOD_GDAL_ENABLED
-    te::core::PluginInfo info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.gdal.teplg");
+    te::core::PluginInfo info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.gdal.teplg.json");
     te::core::PluginManager::instance().insert(info);    
     te::core::PluginManager::instance().load(info.name);
 #endif

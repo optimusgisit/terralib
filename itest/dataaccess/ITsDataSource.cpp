@@ -195,7 +195,7 @@ void CreateDataSource(te::da::DataSource* datasource)
   /* Load OGR plugin */
   te::core::PluginInfo info;
   std::string plugins_path = te::core::FindInTerraLibPath("share/terralib/plugins");
-  info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.ogr.teplg");
+  info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.ogr.teplg.json");
   te::core::PluginManager::instance().insert(info);
   te::core::PluginManager::instance().load(info.name);
 

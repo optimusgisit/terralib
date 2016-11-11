@@ -143,7 +143,7 @@ bool te::edit::AggregateAreaTool::aggregatePolygon()
 
   emit geometriesEdited();
 
-  m_feature == 0;
+  m_feature = 0;
 
   m_display->setCursor(Qt::ArrowCursor);
 

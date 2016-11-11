@@ -45,13 +45,13 @@ void LoadModules()
   {      
     te::plugin::PluginInfo* info;
       
-    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.ogr.teplg"));
+    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.ogr.teplg.json"));
     te::plugin::PluginManager::getInstance().add(info); 
 
-    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.gdal.teplg"));
+    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.gdal.teplg.json"));
     te::plugin::PluginManager::getInstance().add(info);
        
-    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.pgis.teplg"));
+    info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.pgis.teplg.json"));
     te::plugin::PluginManager::getInstance().add(info);       
   
     te::plugin::PluginManager::getInstance().loadAll(); 

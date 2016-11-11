@@ -50,7 +50,7 @@ void LoadGDALModule()
 
 #ifdef TERRALIB_MOD_GDAL_ENABLED
     te::core::PluginInfo info;
-    info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.gdal.teplg");
+    info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.gdal.teplg.jsons");
     te::core::PluginManager::instance().insert(info);
     te::core::PluginManager::instance().load(info.name);
 #endif

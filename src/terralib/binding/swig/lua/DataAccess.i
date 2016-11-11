@@ -104,7 +104,7 @@ te::da::DataSource* GetDs(const std::string& dsId, bool opened);
   {
     try
 	{
-	  if (ds->exists(ds->getType(), ds->getConnectionInfo()))
+	  if (ds->exists(ds->getType(), ds->getConnectionInfo().uri()))
 		  return "";
 	}
 	catch (const std::exception& e)

@@ -42,7 +42,7 @@ void LoadModules()
   te::core::PluginInfo info;
 
 #ifdef TERRALIB_MOD_OGR_ENABLED
-  info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.ogr.teplg");
+  info = te::core::JSONPluginInfoSerializer(plugins_path + "/te.da.ogr.teplg.json");
   te::core::PluginManager::instance().insert(info);
   te::core::PluginManager::instance().load(info.name);
 #endif

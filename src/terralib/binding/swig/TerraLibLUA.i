@@ -77,8 +77,8 @@ static std::string GetRandomicId()
 %include common/DataAccess.i 
 %include lua/DataAccess.i
 
-/* Include Plugin module to the bind. */
-%include common/Plugin.i 
+/* Include Plugin module to the bind. 
+%include common/Plugin.i */
 
 // Wrap function
 std::string GetRandomicId();

@@ -8,7 +8,7 @@
 	"license_description":"GNU Lesser General Public License v 3.0",
 	"license_URL":"http://www.gnu.org/licenses/lgpl-3.0-standalone.html",
 	"site":"http://www.dpi.inpe.br/terralib5/wiki/doku.php?id=wiki:designimplementation:dataaccess:wfs",
-	"dependencies":[],
+	"dependencies":["te.da.ogr"],
 	"linked_libraries":[],
 	"resources":{"shared_library_name":"terralib_mod_wfs"},
 	"parameters":[],

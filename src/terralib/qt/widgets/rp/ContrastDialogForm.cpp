@@ -81,6 +81,8 @@ te::qt::widgets::ContrastDialogForm::ContrastDialogForm(QWidget* parent)
   m_canvas = 0;
   m_parent = parent;
   m_lastText = "";
+  m_previewRaster = 0;
+  m_contrast = false;
 
 // setup controls
   m_ui->setupUi(this);
@@ -383,7 +385,7 @@ void te::qt::widgets::ContrastDialogForm::onBlueComboBoxCurrentIndexChanged(int 
   if (i == index)
     drawHistogram();
 
-  if (m_ui->m_previewCheckBox->isChecked())
+  if (m_ui->m_previewCheckBox->isChecked() && m_previewRaster)
     drawPreview(m_previewRaster);
 }
 
@@ -676,7 +678,10 @@ void te::qt::widgets::ContrastDialogForm::applyPreview()
         te::rst::Raster* rst = static_cast<te::rst::Raster*>(abs);
         
         m_previewRaster = rst;
-        
+
+        double min = m_previewRaster->getBand(0)->getMinValue(true).real();
+        double max = m_previewRaster->getBand(0)->getMaxValue(true).real();
+
         m_histogramWidget->setOutputRaster(algoOutputParams.m_createdOutRasterPtr.release());
 
         if (m_ui->m_previewCheckBox->isChecked())
@@ -732,6 +737,7 @@ void te::qt::widgets::ContrastDialogForm::getRasterFromROI()
 
       std::map<std::string, std::string> info;
       info["FORCE_MEM_DRIVER"] = "TRUE";
+
       //execute clipping
       m_raster = raster->trim(env, info);
 
@@ -739,7 +745,7 @@ void te::qt::widgets::ContrastDialogForm::getRasterFromROI()
 
       drawHistogram();
 
-      if (m_ui->m_previewCheckBox->isChecked())
+      if (m_ui->m_previewCheckBox->isChecked() && m_contrast)
       {
         applyPreview();
       }
@@ -851,6 +857,18 @@ bool te::qt::widgets::ContrastDialogForm::execute()
 
 void te::qt::widgets::ContrastDialogForm::closeEvent(QCloseEvent* e)
 {
+  if (m_previewRaster)
+  {
+    delete m_previewRaster;
+    m_previewRaster = 0;
+  }
+
+  if (m_raster)
+  {
+    delete m_raster;
+    m_raster = 0;
+  }
+
   m_canvas->clear();
   m_mapDisplay->repaint();
 
@@ -867,6 +885,8 @@ void te::qt::widgets::ContrastDialogForm::resetWindow(te::map::AbstractLayerPtr 
 {
   if (!m_canvas)
     return;
+
+  m_contrast = false;
 
   m_canvas->clear();
   m_mapDisplay->repaint();
@@ -906,6 +926,8 @@ void te::qt::widgets::ContrastDialogForm::drawPreview(te::rst::Raster* raster)
 
   const te::gm::Envelope& envRaster = *raster->getExtent();
   const te::gm::Envelope& env = m_mapDisplay->getExtent();
+
+  te::se::ChannelSelection* channel = getChannelSelection();
 
   te::se::Style* style = te::se::CreateCoverageStyle(raster->getNumberOfBands());
 
@@ -1170,12 +1192,18 @@ void te::qt::widgets::ContrastDialogForm::onGreenComboBoxCurrentIndexChanged(int
   if (i == index)
     drawHistogram();
 
-  if (m_ui->m_previewCheckBox->isChecked())
+  if (m_ui->m_previewCheckBox->isChecked() && m_previewRaster)
     drawPreview(m_previewRaster);
 }
 
 void te::qt::widgets::ContrastDialogForm::onMinValueSelected(int value, int band)
 {
+  if (!m_raster)
+    return;
+
+  m_contrast = true;
+
+  double value1;
   int row = m_ui->m_bandTableWidget->currentRow();
 
   int index = m_ui->m_contrastTypeComboBox->currentIndex();
@@ -1214,6 +1242,12 @@ void te::qt::widgets::ContrastDialogForm::onMinValueSelected(int value, int band
 
 void te::qt::widgets::ContrastDialogForm::onMinValueSelected(double value, int band)
 {
+  if (!m_raster)
+    return;
+
+  m_contrast = true;
+
+  double value1;
   int row = m_ui->m_bandTableWidget->currentRow();
 
   int index = m_ui->m_contrastTypeComboBox->currentIndex();
@@ -1252,6 +1286,11 @@ void te::qt::widgets::ContrastDialogForm::onMinValueSelected(double value, int b
 
 void te::qt::widgets::ContrastDialogForm::onMaxValueSelected(int value, int band)
 {
+  if (!m_raster)
+    return;
+
+  m_contrast = true;
+
   int row = m_ui->m_bandTableWidget->currentRow();
 
   int index = m_ui->m_contrastTypeComboBox->currentIndex();
@@ -1290,6 +1329,11 @@ void te::qt::widgets::ContrastDialogForm::onMaxValueSelected(int value, int band
 
 void te::qt::widgets::ContrastDialogForm::onMaxValueSelected(double value, int band)
 {
+  if (!m_raster)
+    return;
+
+  m_contrast = true;
+
   int row = m_ui->m_bandTableWidget->currentRow();
 
   int index = m_ui->m_contrastTypeComboBox->currentIndex();
@@ -1394,7 +1438,7 @@ void te::qt::widgets::ContrastDialogForm::onRedComboBoxCurrentIndexChanged(int i
   if (i == index)
     drawHistogram();
 
-  if (m_ui->m_previewCheckBox->isChecked())
+  if (m_ui->m_previewCheckBox->isChecked() && m_previewRaster)
     drawPreview(m_previewRaster);
 }
 

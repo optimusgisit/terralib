@@ -88,8 +88,8 @@ static std::string GetRandomicId()
 %include common/DataAccess.i
 %include python/DataAccess.i
 
-/* Include Plugin module to the bind. */
-%include common/Plugin.i
+/* Include Plugin module to the bind. 
+%include common/Plugin.i */
 
 /* Include Spatial Temporal module to the bind. */
 %include common/ST.i

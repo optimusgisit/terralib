@@ -12,4 +12,6 @@ bool RasterToVectorInPGIS();
 //---------------Vector to Raster---------------//
 bool VectorToRaster();
 
+bool VectorToVector();
+
 #endif

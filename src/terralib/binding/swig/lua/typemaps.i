@@ -13,6 +13,17 @@
 
 %enddef
 
+%define UNIQUE_PTR_TYPEMAPS(TYPE...)
+
+%typemap(out) (std::unique_ptr< TYPE >) %{
+  SWIG_NewPointerObj(L, (void *) $result.release(), $descriptor(TYPE *), 1); 
+  SWIG_arg++;
+%}
+
+%template () std::unique_ptr< TYPE >;
+
+%enddef
+
 namespace std
 {
   %template (StrVector) vector <string>;
@@ -138,4 +149,5 @@ namespace std
 namespace std 
 {
   template<class T> class auto_ptr { };
+  template<class T> class unique_ptr { };
 }

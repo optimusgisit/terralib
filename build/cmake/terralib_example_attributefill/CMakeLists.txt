@@ -34,6 +34,7 @@ file(GLOB TERRALIB_HDR_FILES ${TERRALIB_ABSOLUTE_ROOT_DIR}/examples/attributefil
 add_executable(terralib_example_attributefill ${TERRALIB_SRC_FILES} ${TERRALIB_HDR_FILES})
 
 target_link_libraries(terralib_example_attributefill terralib_mod_attributefill_core
+                                                     terralib_mod_maptools
                                           
                                           ${BOOST_SYSTEM_LIBRARY})
 

@@ -74,6 +74,8 @@ namespace te
 
       virtual void storeUndoCommand();
 
+      std::string getLayerId();
+
     Q_SIGNALS:
 
       void geometriesEdited();

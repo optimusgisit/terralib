@@ -59,7 +59,7 @@ void LoadOGRModule()
     std::string plugin_path = te::core::FindInTerraLibPath("share/terralib/plugins");
 
 #ifdef TERRALIB_MOD_OGR_ENABLED
-    info = te::core::JSONPluginInfoSerializer(plugin_path + "/te.da.ogr.teplg");
+    info = te::core::JSONPluginInfoSerializer(plugin_path + "/te.da.ogr.teplg.json");
     te::core::PluginManager::instance().insert(info);
     te::core::PluginManager::instance().load(info.name);
 

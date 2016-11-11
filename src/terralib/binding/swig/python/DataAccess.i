@@ -4,7 +4,7 @@
 %{
   #include "terralib/dataaccess.h"
 
-  static te::da::DataSource* MakeDataSource(const std::string& dsType, const std::map<std::string, std::string>& connInfo)
+  static te::da::DataSource* MakeDataSource(const std::string& dsType, const std::string& connInfo)
   {
     boost::uuids::basic_random_generator<boost::mt19937> gen;
     boost::uuids::uuid u = gen();
@@ -38,7 +38,7 @@
 }
 
 // Wrap function
-te::da::DataSource* MakeDataSource(const std::string& dsType, const std::map<std::string, std::string>& connInfo);
+te::da::DataSource* MakeDataSource(const std::string& dsType, const std::string& connInfo);
 te::da::DataSource* GetDataSource(const std::string& dSrcId);
 
 

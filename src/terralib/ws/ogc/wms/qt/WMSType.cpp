@@ -66,7 +66,7 @@ std::string te::ws::ogc::wms::qt::WMSType::getName() const
 
 std::string te::ws::ogc::wms::qt::WMSType::getTitle() const
 {
-  return TE_TR("Web Map Service 2");
+  return TE_TR("Web Map Service");
 }
 
 std::string te::ws::ogc::wms::qt::WMSType::getDescription() const

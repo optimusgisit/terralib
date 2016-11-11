@@ -32,6 +32,7 @@
 // Qt
 #include <QObject>
 #include <QMessageBox>
+#include <QApplication>
 
 // STL
 #include <memory>
@@ -60,8 +61,11 @@ void te::qt::plugins::rp::ContrastAction::onActionActivated(bool checked)
 
 	if (layer.get())
 	{
+    QApplication::setOverrideCursor(Qt::WaitCursor);
+
     if (layer->getVisibility() != te::map::VISIBLE)
     {
+      QApplication::restoreOverrideCursor();
       QMessageBox::warning(te::qt::af::AppCtrlSingleton::getInstance().getMainWindow(), tr("Warning"), tr("The layer is not checked!"));
       return;
     }
@@ -70,6 +74,7 @@ void te::qt::plugins::rp::ContrastAction::onActionActivated(bool checked)
     //Checking if the layer contains a raster property
     if (!dsType->hasRaster())
     {
+      QApplication::restoreOverrideCursor();
       QMessageBox::warning(te::qt::af::AppCtrlSingleton::getInstance().getMainWindow(), tr("Warning"), tr("There is no selected raster layer."));
       return;
     }
@@ -94,6 +99,9 @@ void te::qt::plugins::rp::ContrastAction::onActionActivated(bool checked)
     m_contrastDlg->setMapDisplay(ba->getMapDisplay());
     m_contrastDlg->set(layer);
     m_contrastDlg->setConfigurations();
+
+    QApplication::restoreOverrideCursor();
+
     m_contrastDlg->show();
     m_contrastDlg->exec();
 	}

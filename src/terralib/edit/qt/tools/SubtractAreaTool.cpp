@@ -138,7 +138,7 @@ bool te::edit::SubtractAreaTool::subtractPolygon()
 
   emit geometriesEdited();
 
-  m_feature == 0;
+  m_feature = 0;
 
   m_display->setCursor(Qt::ArrowCursor);
 

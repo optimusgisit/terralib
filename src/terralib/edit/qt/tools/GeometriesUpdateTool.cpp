@@ -50,6 +50,11 @@ void te::edit::GeometriesUpdateTool::setLayer(te::map::AbstractLayer* layer)
   m_layer = layer;
 }
 
+std::string te::edit::GeometriesUpdateTool::getLayerId()
+{
+  return m_layer->getId();
+}
+
 void te::edit::GeometriesUpdateTool::saveGeometry(te::gm::Geometry* gm, const int& op)
 {
   RepositoryManager::getInstance().addGeometry(m_layer->getId(), gm, (FeatureType) op);

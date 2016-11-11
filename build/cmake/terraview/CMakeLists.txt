@@ -168,6 +168,8 @@ else()
 
 endif()
 
+add_dependencies(terraview terralib_qhelp terralib_qtranslation)
+
 if(WIN32 AND MSVC)
   set_target_properties(terraview PROPERTIES LINK_FLAGS_DEBUG "/SUBSYSTEM:CONSOLE")
   set_target_properties(terraview PROPERTIES RELWITHDEBINFO "/SUBSYSTEM:CONSOLE")

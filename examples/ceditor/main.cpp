@@ -40,7 +40,7 @@
 
 void LoadModule(std::string m)
 {
-  std::string mod_name = "share/terralib/plugins/" + m + ".teplg";
+  std::string mod_name = "share/terralib/plugins/" + m + ".teplg.json";
   std::string plgManifest = te::core::FindInTerraLibPath(mod_name);
   te::core::PluginInfo i(te::core::JSONPluginInfoSerializer(plgManifest));
   te::core::PluginManager::instance().load(i.name);

@@ -64,7 +64,7 @@ std::string te::ws::ogc::wcs::qt::WCSType::getName() const
 
 std::string te::ws::ogc::wcs::qt::WCSType::getTitle() const
 {
-  return TE_TR("Web Coverage Service 2");
+  return TE_TR("Web Coverage Service");
 }
 
 std::string te::ws::ogc::wcs::qt::WCSType::getDescription() const

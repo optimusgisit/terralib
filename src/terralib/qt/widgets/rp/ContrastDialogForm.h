@@ -199,6 +199,7 @@ namespace te
           std::vector<double> m_maxValue;
           te::qt::widgets::OutputRasterWidget* m_outputWidget;
           std::string m_lastText;
+          bool m_contrast;
 
           QComboBox* m_monoComboBox;
           QComboBox* m_redComboBox;

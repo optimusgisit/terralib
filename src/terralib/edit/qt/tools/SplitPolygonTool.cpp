@@ -99,8 +99,6 @@ bool te::edit::SplitPolygonTool::mouseDoubleClickEvent(QMouseEvent* e)
 
   startSplit();
 
-  emit splitFinished(*m_oidSet, m_layer->getId());
-
   return true;
 }
 
@@ -110,8 +108,6 @@ bool te::edit::SplitPolygonTool::mouseReleaseEvent(QMouseEvent* e)
     return false;
 
   startSplit();
-
-  emit splitFinished(*m_oidSet, m_layer->getId());
 
   return true;
 }

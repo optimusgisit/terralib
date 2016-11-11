@@ -32,7 +32,7 @@
 
 void LoadDrivers()
 {
-  te::plugin::PluginInfo* info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.ogr.teplg"));
+  te::plugin::PluginInfo* info = te::plugin::GetInstalledPlugin(TE_PLUGINS_PATH + std::string("/te.da.ogr.teplg.json"));
   te::plugin::PluginManager::getInstance().add(info);   
   
   te::plugin::PluginManager::getInstance().loadAll();

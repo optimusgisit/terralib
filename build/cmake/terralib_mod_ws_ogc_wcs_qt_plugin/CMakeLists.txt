@@ -45,7 +45,9 @@ if(Qt5_FOUND)
 
   add_library(terralib_mod_ws_ogc_wcs_qt_plugin SHARED ${TERRALIB_FILES})
 
-  target_link_libraries(terralib_mod_ws_ogc_wcs_qt_plugin terralib_mod_ws_ogc_wcs_qt terralib_mod_qt_widgets terralib_mod_qt_apf)
+  target_link_libraries(terralib_mod_ws_ogc_wcs_qt_plugin terralib_mod_ws_ogc_wcs_qt
+                                                          terralib_mod_qt_widgets
+                                                          terralib_mod_qt_apf)
 
   qt5_use_modules(terralib_mod_ws_ogc_wcs_qt_plugin Widgets)
 

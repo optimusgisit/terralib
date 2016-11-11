@@ -67,10 +67,7 @@ add_custom_command(
 
 add_custom_command(
   OUTPUT remove_files
-  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/share/terraview/help/apf
   COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/share/terraview/help/terraview
-  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/share/terraview/help/widgets
-  COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/share/terraview/help/plugins
   COMMAND ${CMAKE_COMMAND} -E remove_directory ${CMAKE_BINARY_DIR}/share/terraview/help/gen_icones 
   COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/share/terraview/help/about.txt
   COMMAND ${CMAKE_COMMAND} -E remove ${CMAKE_BINARY_DIR}/share/terraview/help/sobre.txt
