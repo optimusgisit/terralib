@@ -28,7 +28,7 @@
 #include "../core/filesystem/FileSystem.h"
 #include "../core/translator/Translator.h"
 #include "../core/uri/URI.h"
-#include "../core/utils/URI.h"
+#include "../core/uri/Utils.h"
 #include "../geometry/Envelope.h"
 #include "../dataaccess/dataset/DataSetType.h"
 #include "../raster/Grid.h"

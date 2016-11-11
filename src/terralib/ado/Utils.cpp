@@ -27,7 +27,7 @@
 #include "../common/Exception.h"
 #include "../core/translator/Translator.h"
 #include "../core/uri/URI.h"
-#include "../core/utils/URI.h"
+#include "../core/uri/Utils.h"
 #include "../datatype.h"
 #include "../dataaccess/dataset/DataSetType.h"
 #include "../dataaccess/dataset/ForeignKey.h"

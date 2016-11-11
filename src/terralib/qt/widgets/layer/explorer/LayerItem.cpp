@@ -8,7 +8,7 @@
 #include "../../se/SymbologyPreview.h"
 
 #include "../../../../core/uri/URI.h"
-#include "../../../../core/utils/URI.h"
+#include "../../../../core/uri/Utils.h"
 #include "../../../../dataaccess/datasource/DataSourceInfoManager.h"
 #include "../../../../maptools/DataSetLayer.h"
 #include "../../../../maptools/DataSetAdapterLayer.h"

@@ -20,7 +20,7 @@
 // TerraLib 5
 #include "../core/translator/Translator.h"
 #include "../core/uri/URI.h"
-#include "../core/utils/URI.h"
+#include "../core/uri/Utils.h"
 #include "Config.h"
 #include "DataSource.h"
 #include "Exception.h"

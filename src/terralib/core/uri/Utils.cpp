@@ -19,7 +19,7 @@
  */
  
   /*!
-  \file terralib/core/utils/URI.h
+  \file terralib/core/uri/Utils.h
 
   \brief  This file contains utility functions used to manipulate data from a URI.
 
@@ -30,7 +30,8 @@
 //Terralib
 #include "../Exception.h"
 #include "../translator/Translator.h"
-#include "URI.h"
+#include "../utils/HexUtils.h"
+#include "Utils.h"
 
 // STL
 #include <iterator>
@@ -78,17 +79,91 @@ te::core::Expand(const std::string& query_str)
 
     std::string v = *ikv;
 
-    //std::string decoded_k;
-    //std::string decoded_v;
+    std::string decodedValue = te::core::URIDecode(v);
 
-    //decode(k.begin(), k.end(), std::back_inserter(decoded_k));
-    //decode(v.begin(), v.end(), std::back_inserter(decoded_v));
-
-    //result[decoded_k] = decoded_v;
-    result[k] = v;
+    result[k] = decodedValue;
 
     ++ikv_pair;
   }
 
   return result;
+}
+
+std::string te::core::URIDecode(const std::string &srcUri)
+{
+
+  const unsigned char * pSrc = (const unsigned char *)srcUri.c_str();
+  const int SRC_LEN = srcUri.length();
+  const unsigned char * const SRC_END = pSrc + SRC_LEN;
+  const unsigned char * const SRC_LAST_DEC = SRC_END - 2;   // last decodable '%'
+
+  char * const pStart = new char[SRC_LEN];
+  char * pEnd = pStart;
+
+  while (pSrc < SRC_LAST_DEC)
+  {
+    if (*pSrc == '%')
+    {
+        char * hex = new char[2];
+        hex[0] = *(pSrc + 1);
+        hex[1] = *(pSrc + 2);
+
+        char c = te::core::Hex2Char(hex);
+
+        *pEnd++ = c;
+        pSrc += 3;
+
+        delete [] hex;
+        continue;
+    }
+
+    *pEnd++ = *pSrc++;
+  }
+
+  // the last 2- chars
+  while (pSrc < SRC_END)
+    *pEnd++ = *pSrc++;
+
+  std::string sResult(pStart, pEnd);
+  delete [] pStart;
+  return sResult;
+}
+
+
+std::string te::core::URIEncode(const std::string &srcUri)
+{
+  const unsigned char * pSrc = (const unsigned char *)srcUri.c_str();
+  const int SRC_LEN = srcUri.length();
+  unsigned char * const pStart = new unsigned char[SRC_LEN * 3];
+  unsigned char * pEnd = pStart;
+  const unsigned char * const SRC_END = pSrc + SRC_LEN;
+
+  for (; pSrc < SRC_END; ++pSrc)
+  {
+    const char& c = *pSrc;
+    if ((48 <= c && c <= 57) ||//0-9
+        (65 <= c && c <= 90) ||//abc...xyz
+        (97 <= c && c <= 122) || //ABC...XYZ
+        (c=='-' || c=='_' || c=='.' || c=='~'))
+    {
+      *pEnd++ = c;
+    }
+    else
+    {
+      // escape this char
+      *pEnd++ = '%';
+      char* res = new char[2];
+
+      te::core::Char2Hex(c, res);
+
+      *pEnd++ = res[0];
+      *pEnd++ = res[1];
+
+      delete [] res;
+    }
+  }
+
+  std::string sResult((char *)pStart, (char *)pEnd);
+  delete [] pStart;
+  return sResult;
 }

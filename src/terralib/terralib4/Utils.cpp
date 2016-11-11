@@ -29,7 +29,7 @@
 #include "../core/encoding/CharEncoding.h"
 #include "../core/translator/Translator.h"
 #include "../core/uri/URI.h"
-#include "../core/utils/URI.h"
+#include "../core/uri/Utils.h"
 #include "../dataaccess/dataset/DataSetType.h"
 #include "../datatype/NumericProperty.h"
 #include "../datatype/Property.h"
