@@ -453,17 +453,9 @@ namespace te
       te::gm::Coord2D ll = m_polygon->getMBR()->getLowerLeft();
       te::gm::Coord2D ur = m_polygon->getMBR()->getUpperRight();
 
-      te::gm::Coord2D llIndexed;
-      r->getGrid()->geoToGrid(ll.x, ll.y, llIndexed.x, llIndexed.y);
-      te::gm::Coord2D urIndexed;
-      r->getGrid()->geoToGrid(ur.x, ur.y, urIndexed.x, urIndexed.y);      
+      // Is the polygon extent is outside the current raster area
       
-      if( // The polygon is smaller than one pixel
-          ( ( urIndexed.x - llIndexed.x ) < 1.0 )
-          ||
-          ( ( llIndexed.y - urIndexed.y ) < 1.0 )
-          // The polygon extent is outside the current raster area
-          ||
+      if(
           ( ll.x > rasterEnvelope.m_urx )
           ||
           ( ur.x < rasterEnvelope.m_llx )
@@ -473,36 +465,47 @@ namespace te
           ( ll.y > rasterEnvelope.m_ury )
         )
       {
-        // The polygon is smaller than one pixel
         setEnd();
       }
       else
       {
         // defining starting/ending rows
-        
+
+        te::gm::Coord2D llIndexed;
+        rasterGrid.geoToGrid(ll.x, ll.y, llIndexed.x, llIndexed.y);
+        te::gm::Coord2D urIndexed;
+        rasterGrid.geoToGrid(ur.x, ur.y, urIndexed.x, urIndexed.y);
+
         m_startingrow = (int)std::ceil( urIndexed.y );
         m_startingrow = std::max( 0, m_startingrow );
-        m_startingrow = std::min( m_startingrow, ((int)r->getNumberOfRows()) - 1 );
+        m_startingrow = std::min( m_startingrow, ((int)rasterGrid.getNumberOfRows()) - 1 );
 
         m_endingrow = (int)std::floor( llIndexed.y );
         m_endingrow = std::max( 0, m_endingrow );
-        m_endingrow = std::min( m_endingrow, ((int)r->getNumberOfRows()) - 1 );
+        m_endingrow = std::min( m_endingrow, ((int)rasterGrid.getNumberOfRows()) - 1 );
 
-        // initialize the TileIndexer
-        
-        m_tileIndexer = std::auto_ptr<te::rst::TileIndexer>(new te::rst::TileIndexer(*m_polygon, r->getResolutionY()));
+        if( m_endingrow < m_startingrow )
+        {
+          setEnd();
+        }
+        else
+        {
+          // initialize the TileIndexer
 
-        // defining initial state
-        
-        m_currline = new te::gm::Line(te::gm::Point(0, 0, m_polygon->getSRID()),
-          te::gm::Point(0, 0, m_polygon->getSRID()), te::gm::LineStringType, 
-          m_polygon->getSRID());
-        
-        m_row = m_startingrow;
-        
-        setNextLine(true);
-        
-        m_column = m_startingcolumn;
+          m_tileIndexer = std::auto_ptr<te::rst::TileIndexer>(new te::rst::TileIndexer(*m_polygon, rasterGrid.getResolutionY()));
+
+          // defining initial state
+
+          m_currline = new te::gm::Line(te::gm::Point(0, 0, m_polygon->getSRID()),
+            te::gm::Point(0, 0, m_polygon->getSRID()), te::gm::LineStringType,
+            m_polygon->getSRID());
+
+          m_row = m_startingrow;
+
+          setNextLine(true);
+
+          m_column = m_startingcolumn;
+        }
       }
     }
 
@@ -726,17 +729,28 @@ namespace te
           positionEnd = positionBegin + 1;
           
           startingX = intersectionPoints[positionBegin]->getX();
+          startingX = std::max( startingX, rasterEnvelopeLLX );
+
           startingY = intersectionPoints[positionBegin]->getY();
+
           endingX = intersectionPoints[positionEnd]->getX();
+          endingX = std::min( endingX, rasterEnvelopeURX );
+
           endingY = intersectionPoints[positionEnd]->getY();
 
           // Build the vector of coordinates with the folowing structure: 
           // vector<pair<startcolumn, endcolumn>>;
           // where each pair represents a stretch to be transversed
           
-          if (  m_tileIndexer->withinOrTouches(te::gm::Point(
-            (startingX + (endingX - startingX) / 2.0 ), (startingY + 
-            (endingY - startingY) / 2.0 ), m_polygon->getSRID()))) 
+          if(
+              ( startingX != endingX )
+              &&
+              (
+                m_tileIndexer->withinOrTouches(te::gm::Point(
+                (startingX + (endingX - startingX) / 2.0 ), (startingY +
+                (endingY - startingY) / 2.0 ), m_polygon->getSRID()))
+              )
+            )
           {
             // The middle-point (between the start end end point)
             // inside the current polygon
@@ -747,12 +761,12 @@ namespace te
             
             endingCol = (int)std::floor( AbstractPositionIterator<T>::m_raster->getGrid()->geoToGrid(endingX, endingY).x );
             endingCol = std::max( 0, endingCol );
-            endingCol = std::min( m_maxcolumns - 1, endingCol );             
-            
-            if( startingCol <= endingCol )
+            endingCol = std::min( m_maxcolumns - 1, endingCol );
+
+            if( endingCol >= startingCol )
             {
               m_columns.push_back(std::pair<int, int>(startingCol, endingCol));
-            }              
+            }
           } 
 
           positionBegin = positionEnd;
