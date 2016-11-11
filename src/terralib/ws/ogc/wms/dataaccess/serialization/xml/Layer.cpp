@@ -81,7 +81,6 @@ te::map::AbstractLayer *te::ws::ogc::wms::serialize::LayerReader(te::xml::Reader
   wmsLayer->setGetMapRequest(request);
 
   reader.next();
-  assert(reader.getElementLocalName() == "LayerList");
 
   return wmsLayer.release();
 }

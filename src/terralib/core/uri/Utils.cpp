@@ -19,7 +19,7 @@
  */
  
   /*!
-  \file terralib/core/uri/Utils.h
+  \file terralib/core/uri/Utils.cpp
 
   \brief  This file contains utility functions used to manipulate data from a URI.
 

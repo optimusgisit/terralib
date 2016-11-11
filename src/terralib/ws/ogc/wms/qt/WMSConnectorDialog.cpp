@@ -3,11 +3,13 @@
 
 //TerraLib
 #include "../../../../core/translator/Translator.h"
+#include "../../../../core/uri/Utils.h"
 #include "../../../../dataaccess/datasource/DataSource.h"
 #include "../../../../dataaccess/datasource/DataSourceFactory.h"
 #include "../../../../dataaccess/datasource/DataSourceInfo.h"
 #include "../../../../dataaccess/datasource/DataSourceManager.h"
 #include "../../../core/Exception.h"
+#include "../../../core/CurlWrapper.h"
 #include "../../../../qt/af/ApplicationController.h"
 
 // Boost
@@ -25,6 +27,9 @@ te::ws::ogc::wms::qt::WMSConnectorDialog::WMSConnectorDialog(QWidget *parent, Qt
 {
   m_ui->setupUi(this);
 
+  m_ui->m_authCheckBox->setCheckState(Qt::Unchecked);
+
+  connect(m_ui->m_authCheckBox, SIGNAL(stateChanged(int)), this, SLOT(authCheckBoxStateChanged(int)));
   connect(m_ui->m_openPushButton, SIGNAL(pressed()), this, SLOT(openPushButtonPressed()));
   connect(m_ui->m_testPushButton, SIGNAL(pressed()), this, SLOT(testPushButtonPressed()));
   connect(m_ui->m_helpPushButton, SIGNAL(pressed()), this, SLOT(helpPushButtonPressed()));
@@ -177,16 +182,55 @@ void te::ws::ogc::wms::qt::WMSConnectorDialog::helpPushButtonPressed()
                        tr("Not implemented yet!\nWe will provide it soon!"));
 }
 
+void te::ws::ogc::wms::qt::WMSConnectorDialog::authCheckBoxStateChanged(const int &state)
+{
+  Qt::CheckState checkState = (Qt::CheckState) state;
+
+  if(checkState == Qt::Checked)
+  {
+    m_ui->m_authUsernameLineEdit->setEnabled(true);
+    m_ui->m_authPasswordLineEdit->setEnabled(true);
+  }
+  else
+  {
+    m_ui->m_authUsernameLineEdit->setEnabled(false);
+    m_ui->m_authPasswordLineEdit->setEnabled(false);
+    m_ui->m_authUsernameLineEdit->clear();
+    m_ui->m_authPasswordLineEdit->clear();
+  }
+}
+
 const std::string te::ws::ogc::wms::qt::WMSConnectorDialog::getConnectionInfo() const
 {
-  QString qstr; // Auxiliary string used to hold temporary data
+  std::string serviceURL; // Auxiliary string used to hold temporary data
 
-                // Get the server URL
-  qstr = m_ui->m_serverLineEdit->text().trimmed();
-  if (qstr.isEmpty())
+  std::string strURI("wms://");
+
+  // Get the server URL
+  serviceURL = m_ui->m_serverLineEdit->text().trimmed().toUtf8().constData();
+
+  if (serviceURL.empty())
     throw te::ws::core::Exception() << te::ErrorDescription(TE_TR("Please define the server address first!"));
 
+  if(m_ui->m_authCheckBox->checkState() == Qt::Checked)
+  {
+
+    if(m_ui->m_authUsernameLineEdit->text().isEmpty() || m_ui->m_authPasswordLineEdit->text().isEmpty())
+    {
+      throw te::ws::core::Exception() << te::ErrorDescription(TE_TR("Username or password is not defined!"));
+    }
+
+    std::string username = m_ui->m_authUsernameLineEdit->text().toUtf8().constData();
+    std::string password = m_ui->m_authPasswordLineEdit->text().toUtf8().constData();
+
+    strURI = strURI + username + std::string(":") + password + std::string("@wms");
+  }
+
+  std::string encodedURL = te::core::URIEncode(serviceURL);
+
   std::string usrDataDir = te::qt::af::AppCtrlSingleton::getInstance().getUserDataDir().toUtf8().data();
-  std::string strURI(std::string(qstr.toUtf8().data()) + "?VERSION=1.3.0" + "&USERDATADIR=" + usrDataDir);
+
+  strURI = strURI + "?URI="+ encodedURL + "&VERSION=1.3.0" + "&USERDATADIR=" + usrDataDir;
+
   return strURI;
 }

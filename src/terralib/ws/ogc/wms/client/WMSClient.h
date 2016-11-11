@@ -116,6 +116,7 @@ namespace te
        */
       void setCurlWrapper(te::ws::core::CurlWrapper* curlWrapper);
 
+
     private:
       std::string                                m_version;
       std::string                                m_dataDir;

@@ -79,6 +79,8 @@ namespace te
 
             void helpPushButtonPressed();
 
+            void authCheckBoxStateChanged(const int& state);
+
           private:
 
             const std::string getConnectionInfo() const;
