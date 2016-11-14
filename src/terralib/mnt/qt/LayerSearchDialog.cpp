@@ -218,7 +218,8 @@ const QString& te::mnt::LayerSearchDialog::GetGeometryName(te::gm::GeomType t)
   case te::gm::PolyhedralSurfaceZType:
   case te::gm::GeometryType:
     return m_geom_name.at(2);
-
+  default:
+    return m_geom_name.at(3);
   }
   return m_geom_name.at(3);
 }
