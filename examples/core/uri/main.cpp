@@ -28,7 +28,7 @@
 // TerraLib
 #include <terralib/Exception.h>
 #include <terralib/core/uri/URI.h>
-#include <terralib/core/utils/URI.h>
+#include <terralib/core/uri/Utils.h>
 
 // STL
 #include <cassert>
@@ -104,6 +104,17 @@ int main(int argc, char *argv[])
       std::cout << "Uri isn't valid!" << std::endl;
       return EXIT_FAILURE;
     }
+  }
+
+  {
+    std::string uri("http%3A%2F%2Fmapas.mma.gov.br%2Fi3geo%2Fogc.php%3Ftema%3Dtransporte%26");
+
+    std::string decodedUri = te::core::URIDecode(uri);
+
+    std::string encodedUri = te::core::URIEncode(decodedUri);
+
+    assert(decodedUri == "http://mapas.mma.gov.br/i3geo/ogc.php?tema=transporte&");
+    assert(encodedUri == "http%3A%2F%2Fmapas.mma.gov.br%2Fi3geo%2Fogc.php%3Ftema%3Dtransporte%26");
   }
 
   return EXIT_SUCCESS;
