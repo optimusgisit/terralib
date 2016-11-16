@@ -26,7 +26,7 @@
 // TerraLib
 #include "../common/ByteSwapUtils.h"
 #include "../common/Globals.h"
-#include "../common/HexUtils.h"
+#include "../core/utils/HexUtils.h"
 #include "../core/translator/Translator.h"
 #include "Exception.h"
 #include "GeometryCollection.h"
@@ -56,7 +56,7 @@ te::gm::Geometry* te::gm::WKBReader::read(const char* wkb)
 
 te::gm::Geometry* te::gm::WKBReader::readHex(const char* hwkb)
 {
-  char* wkb = te::common::Hex2Binary(hwkb);
+  char* wkb = te::core::Hex2Binary(hwkb);
 
   Geometry* g = te::gm::WKBReader::read(wkb);
 

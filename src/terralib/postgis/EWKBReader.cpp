@@ -26,7 +26,7 @@
 // TerraLib
 #include "../common/ByteSwapUtils.h"
 #include "../common/Globals.h"
-#include "../common/HexUtils.h"
+#include "../core/utils/HexUtils.h"
 #include "../core/translator/Translator.h"
 #include "../geometry.h"
 #include "EWKBReader.h"
@@ -140,7 +140,7 @@ te::gm::Geometry* te::pgis::EWKBReader::read(const char* ewkb)
 
 te::gm::Geometry* te::pgis::EWKBReader::readHex(const char* hewkb)
 {
-  char* ewkb = te::common::Hex2Binary(hewkb);
+  char* ewkb = te::core::Hex2Binary(hewkb);
 
   te::gm::Geometry* g = te::pgis::EWKBReader::read(ewkb);
 

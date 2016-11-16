@@ -40,9 +40,6 @@
   #include "./serialization/xml/Layer.h"
 #endif
 
-// GDAL
-#include <gdal_priv.h>
-
 // Boost
 #include <boost/functional/factory.hpp>
 #include <boost/bind.hpp>

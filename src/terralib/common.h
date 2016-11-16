@@ -39,7 +39,6 @@
 #include "common/Exception.h"
 #include "common/FactoryDictionary.h"
 #include "common/Globals.h"
-#include "common/HexUtils.h"
 #include "common/LoggedException.h"
 #include "core/logger/Logger.h"
 #include "common/Module.h"

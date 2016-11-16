@@ -49,13 +49,17 @@ namespace te
         namespace qt
         {
 
+        /*!
+         * \brief The WMSLayerItem class is an extension of QTreeWidgetItem
+         * to handle WMS Layer creation.
+         */
         class WMSLayerItem : public QTreeWidgetItem
         {
         public:
 
           WMSLayerItem(const te::ws::ogc::wms::Layer& rootLayer, QTreeWidget* parent);
 
-          WMSLayerItem(const te::ws::ogc::wms::Layer& layer, WMSLayerItem* parent);
+          WMSLayerItem(const te::ws::ogc::wms::Layer& layer);
 
           ~WMSLayerItem();
 
