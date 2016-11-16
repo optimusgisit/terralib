@@ -19,7 +19,7 @@
 
 /*!
   \file terralib/vp/qt/Utils.cpp
-   
+
   \brief Utility functions for Vector Processing.
 */
 
@@ -88,7 +88,7 @@ std::auto_ptr<te::gm::Geometry> te::vp::GetGeometryUnion(const std::vector<gm::G
 
 te::gm::Geometry* te::vp::GetGeometryUnion(const std::vector<te::mem::DataSetItem*>& items, size_t geomIdx, te::gm::GeomType outGeoType)
 {
-  te::gm::Geometry* resultGeometry(0); 
+  te::gm::Geometry* resultGeometry(0);
 
   std::auto_ptr<te::gm::Geometry> seedGeometry = items[0]->getGeometry(geomIdx);
 
@@ -107,7 +107,7 @@ te::gm::Geometry* te::vp::GetGeometryUnion(const std::vector<te::mem::DataSetIte
   if(items.size() > 2)
   {
     //te::gm::GeometryCollection* teGeomColl = new te::gm::GeometryCollection(0, te::gm::GeometryCollectionType, seedGeometry->getSRID());
-    
+
     std::size_t pos = 1;
     while (!seedGeometry->isValid())
     {
@@ -159,7 +159,7 @@ te::gm::Geometry* te::vp::GetGeometryUnion(const std::vector<te::mem::DataSetIte
 
 te::gm::Geometry* te::vp::GetGeometryUnion(const std::vector<te::mem::DataSetItem*>& items, size_t geomIdx)
 {
-  te::gm::Geometry* resultGeometry(0); 
+  te::gm::Geometry* resultGeometry(0);
 
   std::auto_ptr<te::gm::Geometry> seedGeometry = items[0]->getGeometry(geomIdx);
 
@@ -209,7 +209,7 @@ void te::vp::SplitGeometryCollection(te::gm::GeometryCollection* gcIn, te::gm::G
 std::string te::vp::GetSimpleTableName(std::string fullName)
 {
   std::size_t found = fullName.rfind(".");
-  
+
   if(found >= std::string::npos)
     return fullName;
 
@@ -234,7 +234,7 @@ std::auto_ptr<te::da::DataSet> te::vp::PrepareAdd(te::da::DataSet* ds, te::da::D
       pkPropNames.push_back(sp->getName());
 
   }
-  
+
   std::auto_ptr<te::da::DataSet> dataSet;
 
   if (!pkPropNames.empty())
@@ -248,8 +248,8 @@ std::auto_ptr<te::da::DataSet> te::vp::PrepareAdd(te::da::DataSet* ds, te::da::D
 void te::vp::Save(te::da::DataSource* source, te::da::DataSet* result, te::da::DataSetType* outDsType)
 {
   // do any adaptation necessary to persist the output dataset
-  //te::da::DataSetTypeConverter* converter = new te::da::DataSetTypeConverter(outDsType, source->getCapabilities());
-  //te::da::DataSetType* dsTypeResult = converter->getResult();
+  te::da::DataSetTypeConverter* converter = new te::da::DataSetTypeConverter(outDsType, source->getCapabilities());
+  te::da::DataSetType* dsTypeResult = converter->getResult();
 
   std::auto_ptr<te::da::DataSourceTransactor> t = source->getTransactor();
 
@@ -262,7 +262,7 @@ void te::vp::Save(te::da::DataSource* source, te::da::DataSet* result, te::da::D
     std::string dsTypeName = outDsType->getName();
     std::vector<std::string> dataSetNames = t->getDataSetNames();
     bool create = true;
-    
+
     for (std::size_t i = 0; i < dataSetNames.size(); ++i)
     {
       std::vector<std::string> tok;
@@ -284,12 +284,12 @@ void te::vp::Save(te::da::DataSource* source, te::da::DataSet* result, te::da::D
     if (create)
     {
       // create the dataset
-      t->createDataSet(outDsType, options);
+      t->createDataSet(dsTypeResult, options);
     }
-  
+
     // copy from memory to output datasource
     result->moveBeforeFirst();
-    t->add(outDsType->getName(), result, options);
+    t->add(dsTypeName, result, options);
 
     t->commit();
   }

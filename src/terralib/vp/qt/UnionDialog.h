@@ -89,12 +89,16 @@ namespace te
         te::map::AbstractLayerPtr getLayer();
 
       protected:
+       te::da::Select* getSelectQueryFromLayer(te::map::AbstractLayerPtr layer,
+                                               bool onlySelectedObjects,
+                                               int srid = 0);
 
-        te::da::Select* getSelectQueryFromLayer(te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid = 0);
+       DataStruct getDataStructFromLayer(te::map::AbstractLayerPtr layer,
+                                         bool onlySelectedObjects,
+                                         int srid = 0);
 
-        DataStruct getDataStructFromLayer(te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid = 0);
-
-        std::vector<std::pair<std::string, std::string> > getSelectedProperties();
+       std::vector<std::pair<std::string, std::string> >
+       getSelectedProperties();
 
         void updateFirstLayerComboBox();
 
@@ -104,9 +108,9 @@ namespace te
 
       protected slots:
 
-      void onFirstLayerComboBoxChanged(int index);
+        void onFirstLayerComboBoxChanged(int index);
 
-      void onSecondLayerComboBoxChanged(int index);
+        void onSecondLayerComboBoxChanged(int index);
 
         void onTargetDatasourceToolButtonPressed();
 
@@ -116,24 +120,22 @@ namespace te
         
         void onCancelPushButtonClicked();
 
-        
-
       private:
 
         std::auto_ptr<Ui::UnionDialogForm> m_ui;
-        std::list<te::map::AbstractLayerPtr> m_layers;        //!< The vector layers in Layer Explorer.
-        te::map::AbstractLayerPtr m_firstSelectedLayer;       //!< Input layer selected.
+        std::list<te::map::AbstractLayerPtr> m_layers;    //!< The vector layers in Layer Explorer.
+        te::map::AbstractLayerPtr m_firstSelectedLayer;   //!< Input layer selected.
         te::map::AbstractLayerPtr m_secondSelectedLayer;  //!< Union layer selected.
 
-        std::vector<te::vp::InputParams> m_inputParams;       //!< A vector of input parameters.
-        te::vp::AlgorithmParams* m_params;                    //!< Algorithm parameters.
+        std::vector<te::vp::InputParams> m_inputParams;   //!< A vector of input parameters.
+        te::vp::AlgorithmParams* m_params;                //!< Algorithm parameters.
 
-        te::da::DataSourceInfoPtr m_outputDatasource;         //!< DataSource information.
-        te::map::AbstractLayerPtr m_outputLayer;              //!< Generated Layer.
+        te::da::DataSourceInfoPtr m_outputDatasource;     //!< DataSource information.
+        te::map::AbstractLayerPtr m_outputLayer;          //!< Generated Layer.
         
-        bool m_toFile;                                        //!< The result is in a file?
+        bool m_toFile;                                    //!< The result is in a file?
 
-        std::auto_ptr<te::qt::widgets::DoubleListWidget> m_doubleListWidget;
+        std::unique_ptr<te::qt::widgets::DoubleListWidget> m_doubleListWidget;
     };
   }   // end namespace vp
 }     // end namespace te

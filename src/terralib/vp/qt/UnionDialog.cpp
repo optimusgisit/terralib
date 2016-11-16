@@ -25,23 +25,13 @@
 
 // TerraLib
 #include "../../core/filesystem/FileSystem.h"
-#include "../../core/logger/Logger.h"
-#include "../../core/translator/Translator.h"
-#include "../../common/progress/ProgressManager.h"
 #include "../../common/StringUtils.h"
-
-#include "../../dataaccess/dataset/DataSet.h"
 #include "../../dataaccess/dataset/DataSetAdapter.h"
-#include "../../dataaccess/dataset/DataSetType.h"
 #include "../../dataaccess/dataset/DataSetTypeConverter.h"
 #include "../../dataaccess/dataset/ObjectIdSet.h"
-
-#include "../../dataaccess/datasource/DataSourceCapabilities.h"
-#include "../../dataaccess/datasource/DataSourceInfo.h"
 #include "../../dataaccess/datasource/DataSourceInfoManager.h"
 #include "../../dataaccess/datasource/DataSourceManager.h"
 #include "../../dataaccess/datasource/DataSourceFactory.h"
-
 #include "../../dataaccess/query/And.h"
 #include "../../dataaccess/query/DataSetName.h"
 #include "../../dataaccess/query/Expression.h"
@@ -54,46 +44,31 @@
 #include "../../dataaccess/query/ST_SetSRID.h"
 #include "../../dataaccess/query/ST_Transform.h"
 #include "../../dataaccess/query/Where.h"
-
 #include "../../dataaccess/utils/Utils.h"
-
-#include "../../datatype/Property.h"
 #include "../../datatype/SimpleData.h"
-
 #include "../../geometry/GeometryProperty.h"
-
 #include "../../maptools/QueryLayer.h"
-
 #include "../../qt/widgets/datasource/selector/DataSourceSelectorDialog.h"
 #include "../../qt/widgets/layer/utils/DataSet2Layer.h"
-#include "../../qt/widgets/progress/ProgressViewerDialog.h"
 #include "../../qt/widgets/utils/DoubleListWidget.h"
 
-#include "../../srs/Config.h"
-
 #include "../ComplexData.h"
-#include "../Exception.h"
 #include "../Union.h"
-#include "../Utils.h"
 
 #include "UnionDialog.h"
 #include "ui_UnionDialogForm.h"
-#include "Utils.h"
 
 // Qt
 #include <QFileDialog>
 #include <QGridLayout>
 #include <QMessageBox>
-#include <QTreeWidget>
 
 // BOOST
 #include <boost/filesystem.hpp>
-#include <boost/ptr_container/ptr_vector.hpp>
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
 
-
-Q_DECLARE_METATYPE(te::map::AbstractLayerPtr);
+Q_DECLARE_METATYPE(te::map::AbstractLayerPtr)
 
 te::vp::UnionDialog::UnionDialog(QWidget* parent, Qt::WindowFlags f)
   : QDialog(parent, f),
@@ -103,26 +78,47 @@ te::vp::UnionDialog::UnionDialog(QWidget* parent, Qt::WindowFlags f)
 // add controls
   m_ui->setupUi(this);
 
-  m_ui->m_imgLabel->setPixmap(QIcon::fromTheme("vp-union-hint").pixmap(112, 48));
+  m_ui->m_imgLabel->setPixmap(
+      QIcon::fromTheme("vp-union-hint").pixmap(112, 48));
+
   m_ui->m_targetDatasourceToolButton->setIcon(QIcon::fromTheme("datasource"));
 
   //add double list widget to this form
-  m_doubleListWidget.reset(new te::qt::widgets::DoubleListWidget(m_ui->m_specificParamsTabWidget->widget(0)));
+  m_doubleListWidget.reset(new te::qt::widgets::DoubleListWidget(
+      m_ui->m_specificParamsTabWidget->widget(0)));
   m_doubleListWidget->setLeftLabel("");
   m_doubleListWidget->setRightLabel("");
 
-  QGridLayout* layout = new QGridLayout(m_ui->m_specificParamsTabWidget->widget(0));
+  QGridLayout* layout =
+      new QGridLayout(m_ui->m_specificParamsTabWidget->widget(0));
   layout->addWidget(m_doubleListWidget.get());
   layout->setContentsMargins(0, 0, 0, 0);
 
   QSize iconSize(96, 48);
 
-  connect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onInputLayerComboBoxChanged(int)));
-  connect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onOverlayLayerComboBoxChanged(int)));
-  connect(m_ui->m_targetDatasourceToolButton, SIGNAL(pressed()), this, SLOT(onTargetDatasourceToolButtonPressed()));
-  connect(m_ui->m_targetFileToolButton, SIGNAL(pressed()), this,  SLOT(onTargetFileToolButtonPressed()));
-  connect(m_ui->m_okPushButton, SIGNAL(clicked()), this, SLOT(onOkPushButtonClicked()));
-  connect(m_ui->m_cancelPushButton, SIGNAL(clicked()), this, SLOT(onCancelPushButtonClicked()));
+  m_ui->m_singleRadioButton->setIconSize(iconSize);
+  m_ui->m_singleRadioButton->setIcon(QIcon::fromTheme("vp-single-objects"));
+
+  m_ui->m_multiRadioButton->setIconSize(iconSize);
+  m_ui->m_multiRadioButton->setIcon(QIcon::fromTheme("vp-multi-objects"));
+
+  connect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(onInputLayerComboBoxChanged(int)));
+
+  connect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(onOverlayLayerComboBoxChanged(int)));
+
+  connect(m_ui->m_targetDatasourceToolButton, SIGNAL(pressed()), this,
+          SLOT(onTargetDatasourceToolButtonPressed()));
+
+  connect(m_ui->m_targetFileToolButton, SIGNAL(pressed()), this,
+          SLOT(onTargetFileToolButtonPressed()));
+
+  connect(m_ui->m_okPushButton, SIGNAL(clicked()), this,
+          SLOT(onOkPushButtonClicked()));
+
+  connect(m_ui->m_cancelPushButton, SIGNAL(clicked()), this,
+          SLOT(onCancelPushButtonClicked()));
 
   m_ui->m_helpPushButton->setNameSpace("dpi.inpe.br.plugins"); 
   m_ui->m_helpPushButton->setPageReference("plugins/vp/vp_union.html");
@@ -138,7 +134,9 @@ void te::vp::UnionDialog::setLayers(std::list<te::map::AbstractLayerPtr> layers)
 
   while (it != layers.end())
   {
-    std::auto_ptr<te::da::DataSetType> dsType = it->get()->getSchema();
+    std::unique_ptr<te::da::DataSetType> dsType =
+        std::move(it->get()->getSchema());
+
     if (dsType->hasGeom())
     {
       m_layers.push_back(*it);
@@ -159,7 +157,8 @@ te::map::AbstractLayerPtr te::vp::UnionDialog::getLayer()
   return m_outputLayer;
 }
 
-te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid)
+te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(
+    te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid)
 {
 // Do a Cast from AbstractLayerPtr to DataSetLayer or QueryLayer.
   te::map::DataSetLayer* dataSetLayer = 0;
@@ -170,7 +169,9 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
     dataSetLayer = dynamic_cast<te::map::DataSetLayer*>(layer.get());
     if (!dataSetLayer)
     {
-      QMessageBox::information(this, "Error", "Can not execute this operation on this type of layer.");
+      QMessageBox::information(
+          this, tr("Error"),
+          tr("Can not execute this operation on this type of layer."));
       return 0;
     }
   }
@@ -179,13 +180,17 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
     queryLayer = dynamic_cast<te::map::QueryLayer*>(layer.get());
     if (!queryLayer)
     {
-      QMessageBox::information(this, "Error", "Can not execute this operation on this type of layer.");
+      QMessageBox::information(
+          this, tr("Error"),
+          tr("Can not execute this operation on this type of layer."));
       return 0;
     }
   }
   else
   {
-    QMessageBox::information(this, "Error", "Can not execute this operation on this type of layer.");
+    QMessageBox::information(
+        this, tr("Error"),
+        tr("Can not execute this operation on this type of layer."));
     return 0;
   }
 
@@ -204,25 +209,31 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
     }
     else
     {
-      std::auto_ptr<te::da::DataSetType> dsType = dataSetLayer->getSchema();
+      std::unique_ptr<te::da::DataSetType> dsType =
+          std::move(dataSetLayer->getSchema());
+
       std::vector<te::dt::Property*> properties = dsType.get()->getProperties();
 
       for (std::size_t i = 0; i < properties.size(); ++i)
       {
         if (properties[i]->getType() != te::dt::GEOMETRY_TYPE)
         {
-          te::da::Field* currentField = new te::da::Field(properties[i]->getName());
+          te::da::Field* currentField =
+              new te::da::Field(properties[i]->getName());
           fields->push_back(currentField);
         }
         else
         {
           te::da::LiteralInt32* litSRID = new te::da::LiteralInt32(srid);
-          
-          te::da::Expression* eSetSRID = new te::da::ST_SetSRID(new te::da::PropertyName(properties[i]->getName()), litSRID);
 
-          te::da::Expression* eTransform = new te::da::ST_Transform(eSetSRID, srid);
+          te::da::Expression* eSetSRID = new te::da::ST_SetSRID(
+              new te::da::PropertyName(properties[i]->getName()), litSRID);
 
-          te::da::Field* geomField = new te::da::Field(*eTransform, properties[i]->getName());
+          te::da::Expression* eTransform =
+              new te::da::ST_Transform(eSetSRID, srid);
+
+          te::da::Field* geomField =
+              new te::da::Field(*eTransform, properties[i]->getName());
           fields->push_back(geomField);
         }
       }
@@ -231,7 +242,8 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
     select->setFields(fields);
 
     te::da::From* from = new te::da::From;
-    te::da::FromItem* fromItem = new te::da::DataSetName(dataSetLayer->getDataSetName());
+    te::da::FromItem* fromItem =
+        new te::da::DataSetName(dataSetLayer->getDataSetName());
     from->push_back(fromItem);
     select->setFrom(from);
 
@@ -240,7 +252,9 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
       const te::da::ObjectIdSet* oidSet = layer->getSelected();
       if (!oidSet)
       {
-        QMessageBox::information(this, "Union", "Select the layer objects to perform the operation.");
+        QMessageBox::information(
+            this, tr("Union"),
+            tr("Select the layer objects to perform the operation."));
         return 0;
       }
 
@@ -255,7 +269,9 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
 
     if (srid != 0)
     {
-      std::auto_ptr<te::da::DataSetType> dsType = queryLayer->getSchema();
+      std::unique_ptr<te::da::DataSetType> dsType =
+          std::move(queryLayer->getSchema());
+
       std::vector<te::dt::Property*> properties = dsType.get()->getProperties();
 
       te::da::Fields* fields = new te::da::Fields;
@@ -264,18 +280,22 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
       {
         if (properties[i]->getType() != te::dt::GEOMETRY_TYPE)
         {
-          te::da::Field* currentField = new te::da::Field(properties[i]->getName());
+          te::da::Field* currentField =
+              new te::da::Field(properties[i]->getName());
           fields->push_back(currentField);
         }
         else
         {
           te::da::LiteralInt32* litSRID = new te::da::LiteralInt32(srid);
 
-          te::da::Expression* eSetSRID = new te::da::ST_SetSRID(new te::da::PropertyName(properties[i]->getName()), litSRID);
+          te::da::Expression* eSetSRID = new te::da::ST_SetSRID(
+              new te::da::PropertyName(properties[i]->getName()), litSRID);
 
-          te::da::Expression* eTransform = new te::da::ST_Transform(eSetSRID, srid);
+          te::da::Expression* eTransform =
+              new te::da::ST_Transform(eSetSRID, srid);
 
-          te::da::Field* geomField = new te::da::Field(*eTransform, properties[i]->getName());
+          te::da::Field* geomField =
+              new te::da::Field(*eTransform, properties[i]->getName());
           fields->push_back(geomField);
         }
       }
@@ -289,7 +309,9 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
       const te::da::ObjectIdSet* oidSet = layer->getSelected();
       if (!oidSet)
       {
-        QMessageBox::information(this, "Union", "Select the layer objects to perform the operation.");
+        QMessageBox::information(
+            this, tr("Union"),
+            tr("Select the layer objects to perform the operation."));
         return 0;
       }
 
@@ -309,16 +331,22 @@ te::da::Select* te::vp::UnionDialog::getSelectQueryFromLayer(te::map::AbstractLa
   return select;
 }
 
-te::vp::UnionDialog::DataStruct te::vp::UnionDialog::getDataStructFromLayer(te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid)
+te::vp::UnionDialog::DataStruct te::vp::UnionDialog::getDataStructFromLayer(
+    te::map::AbstractLayerPtr layer, bool onlySelectedObjects, int srid)
 {
   DataStruct data;
 
   std::string sourceId = layer->getDataSourceId();
-  te::da::DataSourcePtr dataSource = te::da::DataSourceManager::getInstance().find(sourceId);
 
-  std::auto_ptr<te::da::DataSetType> dataSetType = layer->getSchema();
-  std::auto_ptr<te::da::DataSet> dataSet = dataSource->getDataSet(dataSetType->getName());
-  
+  te::da::DataSourcePtr dataSource =
+      te::da::DataSourceManager::getInstance().find(sourceId);
+
+  std::unique_ptr<te::da::DataSetType> dataSetType =
+      std::move(layer->getSchema());
+
+  std::unique_ptr<te::da::DataSet> dataSet =
+      std::move(dataSource->getDataSet(dataSetType->getName()));
+
   if (dataSetType.get() && dataSet.get())
   {
     if (onlySelectedObjects)
@@ -326,7 +354,9 @@ te::vp::UnionDialog::DataStruct te::vp::UnionDialog::getDataStructFromLayer(te::
       const te::da::ObjectIdSet* oidSet = layer->getSelected();
       if (!oidSet)
       {
-        QMessageBox::information(this, "Union", "Select the layer objects to perform the operation.");
+        QMessageBox::information(
+            this, tr("Union"),
+            tr("Select the layer objects to perform the operation."));
         return data;
       }
 
@@ -338,12 +368,17 @@ te::vp::UnionDialog::DataStruct te::vp::UnionDialog::getDataStructFromLayer(te::
 
     if (srid != 0)
     {
-      std::auto_ptr<te::da::DataSetTypeConverter> converter(new te::da::DataSetTypeConverter(dataSetType.get(), dataSource->getCapabilities(), dataSource->getEncoding()));
+      std::unique_ptr<te::da::DataSetTypeConverter> converter(
+          new te::da::DataSetTypeConverter(dataSetType.get(),
+                                           dataSource->getCapabilities(),
+                                           dataSource->getEncoding()));
+
       te::da::AssociateDataSetTypeConverterSRID(converter.get(), srid);
 
       dataSetType.reset(new te::da::DataSetType(*converter->getResult()));
 
-      te::da::DataSetAdapter* dataSetAdapter = te::da::CreateAdapter(dataSet.release(), converter.get());
+      te::da::DataSetAdapter* dataSetAdapter =
+          te::da::CreateAdapter(dataSet.release(), converter.get());
 
       if (!dataSetAdapter)
         return data;
@@ -358,7 +393,8 @@ te::vp::UnionDialog::DataStruct te::vp::UnionDialog::getDataStructFromLayer(te::
   return data;
 }
 
-std::vector<std::pair<std::string, std::string> > te::vp::UnionDialog::getSelectedProperties()
+std::vector<std::pair<std::string, std::string> >
+te::vp::UnionDialog::getSelectedProperties()
 {
   std::vector<std::string> outVec = m_doubleListWidget->getOutputValues();
   std::vector<std::pair<std::string, std::string> > result;
@@ -391,17 +427,22 @@ void te::vp::UnionDialog::updateFirstLayerComboBox()
 {
   std::list<te::map::AbstractLayerPtr>::iterator it = m_layers.begin();
 
-  disconnect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onFirstLayerComboBoxChanged(int)));
+  disconnect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this,
+             SLOT(onFirstLayerComboBoxChanged(int)));
 
   while (it != m_layers.end())
   {
-    m_ui->m_firstLayerComboBox->addItem(QString(it->get()->getTitle().c_str()), QVariant::fromValue(*it));
+    m_ui->m_firstLayerComboBox->addItem(QString(it->get()->getTitle().c_str()),
+                                        QVariant::fromValue(*it));
     ++it;
   }
 
-  connect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onFirstLayerComboBoxChanged(int)));
+  connect(m_ui->m_firstLayerComboBox, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(onFirstLayerComboBoxChanged(int)));
 
-  QVariant varLayer = m_ui->m_firstLayerComboBox->itemData(m_ui->m_firstLayerComboBox->currentIndex(), Qt::UserRole);
+  QVariant varLayer = m_ui->m_firstLayerComboBox->itemData(
+      m_ui->m_firstLayerComboBox->currentIndex(), Qt::UserRole);
+
   te::map::AbstractLayerPtr layer = varLayer.value<te::map::AbstractLayerPtr>();
 
   m_firstSelectedLayer = layer;
@@ -413,19 +454,24 @@ void te::vp::UnionDialog::updateSecondLayerComboBox()
 
   std::list<te::map::AbstractLayerPtr>::iterator it = m_layers.begin();
 
-  disconnect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSecondLayerComboBoxChanged(int)));
+  disconnect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)),
+             this, SLOT(onSecondLayerComboBoxChanged(int)));
 
   while (it != m_layers.end())
   {
-    m_ui->m_secondLayerComboBox->addItem(QString(it->get()->getTitle().c_str()), QVariant::fromValue(*it));
+    m_ui->m_secondLayerComboBox->addItem(QString(it->get()->getTitle().c_str()),
+                                         QVariant::fromValue(*it));
     ++it;
   }
 
   m_ui->m_secondLayerComboBox->removeItem(currIndex);
 
-  connect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)), this, SLOT(onSecondLayerComboBoxChanged(int)));
+  connect(m_ui->m_secondLayerComboBox, SIGNAL(currentIndexChanged(int)), this,
+          SLOT(onSecondLayerComboBoxChanged(int)));
 
-  QVariant varLayer = m_ui->m_secondLayerComboBox->itemData(m_ui->m_secondLayerComboBox->currentIndex(), Qt::UserRole);
+  QVariant varLayer = m_ui->m_secondLayerComboBox->itemData(
+      m_ui->m_secondLayerComboBox->currentIndex(), Qt::UserRole);
+
   te::map::AbstractLayerPtr layer = varLayer.value<te::map::AbstractLayerPtr>();
 
   m_secondSelectedLayer = layer;
@@ -435,16 +481,16 @@ void te::vp::UnionDialog::updateDoubleListWidget()
 {
   std::vector<std::string> inputValues;
 
-  std::auto_ptr<te::da::DataSetType> firstSchema;
-  std::auto_ptr<te::da::DataSetType> secondSchema;
+  std::unique_ptr<te::da::DataSetType> firstSchema;
+  std::unique_ptr<te::da::DataSetType> secondSchema;
 
   if (m_firstSelectedLayer)
-    firstSchema = m_firstSelectedLayer->getSchema();
+    firstSchema = std::move(m_firstSelectedLayer->getSchema());
   else
     return;
 
   if (m_secondSelectedLayer)
-    secondSchema = m_secondSelectedLayer->getSchema();
+    secondSchema = std::move(m_secondSelectedLayer->getSchema());
   else
     return;
 
@@ -472,7 +518,8 @@ void te::vp::UnionDialog::updateDoubleListWidget()
       if (name.empty())
         name = secondSchema->getName();
 
-      inputValues.push_back(secondSchema->getTitle() + ": " + secondProps[i]->getName());
+      inputValues.push_back(secondSchema->getTitle() + ": " +
+                            secondProps[i]->getName());
     }
   }
 
@@ -495,7 +542,9 @@ void te::vp::UnionDialog::onFirstLayerComboBoxChanged(int index)
 
 void te::vp::UnionDialog::onSecondLayerComboBoxChanged(int index)
 {
-  QVariant varLayer = m_ui->m_secondLayerComboBox->itemData(index, Qt::UserRole);
+  QVariant varLayer =
+      m_ui->m_secondLayerComboBox->itemData(index, Qt::UserRole);
+
   te::map::AbstractLayerPtr layer = varLayer.value<te::map::AbstractLayerPtr>();
 
   m_secondSelectedLayer = layer;
@@ -529,8 +578,9 @@ void te::vp::UnionDialog::onTargetFileToolButtonPressed()
   m_ui->m_newLayerNameLineEdit->clear();
   m_ui->m_repositoryLineEdit->clear();
 
-  QString fileName = QFileDialog::getSaveFileName(this, tr("Save as..."),
-    QString(), tr("Shapefile (*.shp *.SHP);;"), 0, QFileDialog::DontConfirmOverwrite);
+  QString fileName = QFileDialog::getSaveFileName(
+      this, tr("Save as..."), QString(), tr("Shapefile (*.shp *.SHP);;"), 0,
+      QFileDialog::DontConfirmOverwrite);
 
   if (fileName.isEmpty())
     return;
@@ -547,23 +597,27 @@ void te::vp::UnionDialog::onTargetFileToolButtonPressed()
 
 void te::vp::UnionDialog::onOkPushButtonClicked()
 {
-  if (m_ui->m_firstLayerComboBox->currentText().isEmpty() || m_ui->m_secondLayerComboBox->currentText().isEmpty())
+  if(m_ui->m_firstLayerComboBox->currentText().isEmpty() ||
+     m_ui->m_secondLayerComboBox->currentText().isEmpty())
   {
-    QMessageBox::information(this, tr("Merge"), tr("It is necessary at least two layer to operat!"));
+    QMessageBox::information(
+        this, tr("Merge"), tr("It is necessary at least two layer to operat!"));
     return;
   }
 
   // Checking consistency of output paramenters
   if (m_ui->m_repositoryLineEdit->text().isEmpty())
   {
-    QMessageBox::information(this, tr("Merge"), tr("Select a repository for the resulting layer!"));
+    QMessageBox::information(
+        this, tr("Merge"), tr("Select a repository for the resulting layer!"));
 
     return;
   }
 
   if (m_ui->m_newLayerNameLineEdit->text().isEmpty())
   {
-    QMessageBox::information(this, tr("Merge"), tr("Define a name for the resulting layer!"));
+    QMessageBox::information(this, tr("Merge"),
+                             tr("Define a name for the resulting layer!"));
     return;
   }
 
@@ -572,36 +626,54 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
 
   if (firstSrid <= 0 || secondSrid <= 0)
   {
-    QMessageBox::information(this, tr("Merge"), tr("All layers must have SRID!"));
+    QMessageBox::information(this, tr("Merge"),
+                             tr("All layers must have SRID!"));
     return;
   }
 
-  std::string outputdataset = m_ui->m_newLayerNameLineEdit->text().toUtf8().data();
+  std::string outputdataset =
+      m_ui->m_newLayerNameLineEdit->text().toUtf8().data();
 
   std::string firstSourceId = m_firstSelectedLayer->getDataSourceId();
   std::string secondSourceId = m_secondSelectedLayer->getDataSourceId();
 
-  te::da::DataSourcePtr firstSource = te::da::DataSourceManager::getInstance().find(firstSourceId);
-  te::da::DataSourcePtr secondSource = te::da::DataSourceManager::getInstance().find(secondSourceId);
+  te::da::DataSourcePtr firstSource =
+      te::da::DataSourceManager::getInstance().find(firstSourceId);
 
-  std::auto_ptr<te::da::DataSetTypeConverter> firstConverter(new te::da::DataSetTypeConverter(m_firstSelectedLayer->getSchema().get(), firstSource->getCapabilities(), firstSource->getEncoding()));
-  te::da::AssociateDataSetTypeConverterSRID(firstConverter.get(), m_firstSelectedLayer->getSRID());
+  te::da::DataSourcePtr secondSource =
+      te::da::DataSourceManager::getInstance().find(secondSourceId);
 
-  std::auto_ptr<te::da::DataSetTypeConverter> secondConverter(new te::da::DataSetTypeConverter(m_secondSelectedLayer->getSchema().get(), secondSource->getCapabilities(), secondSource->getEncoding()));
-  te::da::AssociateDataSetTypeConverterSRID(secondConverter.get(), m_secondSelectedLayer->getSRID(), m_firstSelectedLayer->getSRID());
+  std::unique_ptr<te::da::DataSetTypeConverter> firstConverter(
+      new te::da::DataSetTypeConverter(m_firstSelectedLayer->getSchema().get(),
+                                       firstSource->getCapabilities(),
+                                       firstSource->getEncoding()));
+
+  te::da::AssociateDataSetTypeConverterSRID(firstConverter.get(),
+                                            m_firstSelectedLayer->getSRID());
+
+  std::unique_ptr<te::da::DataSetTypeConverter> secondConverter(
+      new te::da::DataSetTypeConverter(m_secondSelectedLayer->getSchema().get(),
+                                       secondSource->getCapabilities(),
+                                       secondSource->getEncoding()));
+
+  te::da::AssociateDataSetTypeConverterSRID(secondConverter.get(),
+                                            m_secondSelectedLayer->getSRID(),
+                                            m_firstSelectedLayer->getSRID());
 
   te::da::DataSetType* firstDst(firstConverter->getResult());
   te::da::DataSetType* secondDst(secondConverter->getResult());
 
-  te::da::DataSetAdapter* firstAdapter = te::da::CreateAdapter(m_firstSelectedLayer->getData().release(), firstConverter.get());
-  te::da::DataSetAdapter* secondAdapter = te::da::CreateAdapter(m_secondSelectedLayer->getData().release(), secondConverter.get());
+  te::da::DataSetAdapter* firstAdapter = te::da::CreateAdapter(
+      m_firstSelectedLayer->getData().release(), firstConverter.get());
 
-  std::auto_ptr<te::da::DataSet> firstDs(firstAdapter);
-  std::auto_ptr<te::da::DataSet> secondDs(secondAdapter);
+  te::da::DataSetAdapter* secondAdapter = te::da::CreateAdapter(
+      m_secondSelectedLayer->getData().release(), secondConverter.get());
+
+  std::unique_ptr<te::da::DataSet> firstDs(firstAdapter);
+  std::unique_ptr<te::da::DataSet> secondDs(secondAdapter);
 
   try
   {
-
     te::vp::InputParams inputParam;
     inputParam.m_inputDataSet = firstDs.get();
     inputParam.m_inputDataSetType = firstDst;
@@ -616,11 +688,17 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
     params.push_back(inputParam);
     params.push_back(mergeParam);
 
-    te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >* attrs = new te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >(getSelectedProperties());
+    te::vp::ComplexData<std::vector<std::pair<std::string, std::string> > >*
+        attrs = new te::vp::ComplexData<
+            std::vector<std::pair<std::string, std::string> > >(
+            getSelectedProperties());
 
     std::map<std::string, te::dt::AbstractData*> specificParams;
     specificParams["ATTRIBUTES"] = attrs;
-    specificParams["IS_COLLECTION"] = new te::dt::SimpleData<bool, te::dt::BOOLEAN_TYPE>(!m_ui->m_singleRadioButton->isChecked());
+
+    specificParams["IS_COLLECTION"] =
+        new te::dt::SimpleData<bool, te::dt::BOOLEAN_TYPE>(
+            !m_ui->m_singleRadioButton->isChecked());
 
     te::vp::AlgorithmParams* aParams = new te::vp::AlgorithmParams();
     aParams->setInputParams(params);
@@ -637,7 +715,9 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
 
       if (te::core::FileSystem::exists(ogrUri.string()))
       {
-        QMessageBox::information(this, tr("Merge"), tr("Output file already exists. Remove it or select a new name and try again."));
+        QMessageBox::information(this, tr("Merge"),
+                                 tr("Output file already exists. Remove it or "
+                                    "select a new name and try again."));
         return;
       }
 
@@ -645,14 +725,21 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
       if (idx != std::string::npos)
         outputdataset = outputdataset.substr(0, idx);
 
+      aParams->setOutputDataSetName(outputdataset);
+
       ogrDsinfo += ogrUri.string();
 
-      auxSource.reset(te::da::DataSourceFactory::make("OGR", ogrDsinfo).release());
+      auxSource.reset(
+          te::da::DataSourceFactory::make("OGR", ogrDsinfo).release());
       auxSource->open();
 
       if (auxSource->dataSetExists(outputdataset))
       {
-        QMessageBox::information(this, tr("Merge"), tr("There is already a dataset with the requested name in the output data source. Remove it or select a new name and try again."));
+        QMessageBox::information(
+            this, tr("Merge"),
+            tr("There is already a dataset with the requested name in the "
+               "output data source. Remove it or select a new name and try "
+               "again."));
         return;
       }
     }
@@ -661,12 +748,16 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
       auxSource = te::da::GetDataSource(m_outputDatasource->getId());
       if (!auxSource)
       {
-        QMessageBox::information(this, tr("Merge"), tr("The selected output datasource can not be accessed."));
+        QMessageBox::information(
+            this, tr("Merge"),
+            tr("The selected output datasource can not be accessed."));
         return;
       }
       if (auxSource->dataSetExists(outputdataset))
       {
-        QMessageBox::information(this, tr("Merge"), tr("Dataset already exists. Remove it or select a new name and try again."));
+        QMessageBox::information(this, tr("Merge"),
+                                 tr("Dataset already exists. Remove it or "
+                                    "select a new name and try again."));
         return;
       }
     }
@@ -693,18 +784,22 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
       ds->setDescription(ogrUri.string());
       ds->setId(id);
 
-      te::da::DataSourcePtr newds = te::da::DataSourceManager::getInstance().get(id, "OGR", ds->getConnInfo());
+      te::da::DataSourcePtr newds =
+          te::da::DataSourceManager::getInstance().get(id, "OGR",
+                                                       ds->getConnInfo());
       newds->open();
       te::da::DataSourceInfoManager::getInstance().add(ds);
       m_outputDatasource = ds;
     }
 
     // creating a layer for the result
-    te::da::DataSourcePtr outDataSource = te::da::GetDataSource(m_outputDatasource->getId());
+    te::da::DataSourcePtr outDataSource =
+        te::da::GetDataSource(m_outputDatasource->getId());
 
     te::qt::widgets::DataSet2Layer converter(m_outputDatasource->getId());
 
-    te::da::DataSetTypePtr dt(outDataSource->getDataSetType(outputdataset).release());
+    te::da::DataSetTypePtr dt(
+        outDataSource->getDataSetType(outputdataset).release());
     m_outputLayer = converter(dt);
   }
   catch (const te::common::Exception& e)
@@ -714,7 +809,6 @@ void te::vp::UnionDialog::onOkPushButtonClicked()
   }
   catch (const std::exception& e)
   {
-    std::string eeeee = e.what();
     QMessageBox::warning(this, tr("Union"), e.what());
     return;
   }
