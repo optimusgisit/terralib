@@ -84,11 +84,11 @@ install(TARGETS terralib_mod_ws_ogc_wms_dataaccess
         ARCHIVE DESTINATION ${TERRALIB_DESTINATION_ARCHIVE} COMPONENT runtime)
 
 install(FILES ${TERRALIB_HDR_FILES}
-        DESTINATION ${TERRALIB_DESTINATION_HEADERS}/terralib/ws/ogc/wms/da COMPONENT devel)
+        DESTINATION ${TERRALIB_DESTINATION_HEADERS}/terralib/ws/ogc/wms/dataaccess COMPONENT devel)
 
 if(TERRALIB_MOD_XML_ENABLED)
   install(FILES ${TERRALIB_XML_HDR_FILES}
-          DESTINATION ${TERRALIB_DESTINATION_HEADERS}/terralib/ws/ogc/wms/da/serialization/xml COMPONENT devel)
+          DESTINATION ${TERRALIB_DESTINATION_HEADERS}/terralib/ws/ogc/wms/dataaccess/serialization/xml COMPONENT devel)
 endif()
 
 install(FILES ${TERRALIB_ABSOLUTE_ROOT_DIR}/share/terralib/plugins/te.ogc.wms.teplg.json

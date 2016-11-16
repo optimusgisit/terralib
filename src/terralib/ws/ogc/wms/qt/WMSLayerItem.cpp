@@ -42,14 +42,15 @@ te::ws::ogc::wms::qt::WMSLayerItem::WMSLayerItem(const te::ws::ogc::wms::Layer& 
 
   for(size_t i = 0; i < m_layer.m_layers.size(); i++)
   {
-    WMSLayerItem* child = new WMSLayerItem(m_layer.m_layers[i], this);
+    WMSLayerItem* child = new WMSLayerItem(m_layer.m_layers[i]);
+    this->addChild(child);
   }
 
   this->buildDefaultRequest();
 }
 
-te::ws::ogc::wms::qt::WMSLayerItem::WMSLayerItem(const te::ws::ogc::wms::Layer& layer, te::ws::ogc::wms::qt::WMSLayerItem *parent)
-  : QTreeWidgetItem(parent)
+te::ws::ogc::wms::qt::WMSLayerItem::WMSLayerItem(const te::ws::ogc::wms::Layer& layer)
+  : QTreeWidgetItem()
 {
   m_layer = layer;
 
@@ -70,7 +71,8 @@ te::ws::ogc::wms::qt::WMSLayerItem::WMSLayerItem(const te::ws::ogc::wms::Layer& 
 
   for(size_t i = 0; i < m_layer.m_layers.size(); i++)
   {
-    WMSLayerItem* child = new WMSLayerItem(m_layer.m_layers[i], this);
+    WMSLayerItem* child = new WMSLayerItem(m_layer.m_layers[i]);
+    this->addChild(child);
   }
 
   this->buildDefaultRequest();

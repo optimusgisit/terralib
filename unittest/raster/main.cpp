@@ -46,12 +46,14 @@ int main(int argc, char *argv[])
 {
   /* Initialize Terralib platform */
   TerraLib::getInstance().initialize();
+  te::core::plugin::InitializePluginSystem();
     
   LoadModules();
 
   int resultStatus = boost::unit_test::unit_test_main(init_unit_test, argc, argv);
   
   /* Finalize TerraLib Plataform */
+  te::core::plugin::FinalizePluginSystem();
   TerraLib::getInstance().finalize();  
 
   return resultStatus;

@@ -27,6 +27,7 @@
 #include <terralib/common/Globals.h>
 #include <terralib/core/encoding/CharEncoding.h>
 #include <terralib/geometry.h>
+#include <terralib/core/utils/HexUtils.h>
 
 // STL
 #include <cstdio>
@@ -530,7 +531,7 @@ void TsGeometry::tcCreatePoint()
     CPPUNIT_ASSERT(size == 21);
     char* wkb = new char[size];
     pt.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01010000006666666666E632401F85EB51B89E2340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -541,7 +542,7 @@ void TsGeometry::tcCreatePoint()
     size_t size = 0;
     char* wkb = pt.asBinary(size);
     CPPUNIT_ASSERT(size == 21);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01010000006666666666E632401F85EB51B89E2340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -608,7 +609,7 @@ void TsGeometry::tcCreatePointZ()
     CPPUNIT_ASSERT(size == 29);
     char* wkb = new char[size];
     pt.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01E90300006666666666E632401F85EB51B89E2340CDCCCCCCCC6C5340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -619,7 +620,7 @@ void TsGeometry::tcCreatePointZ()
     size_t size = 0;
     char* wkb = pt.asBinary(size);
     CPPUNIT_ASSERT(size == 29);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01E90300006666666666E632401F85EB51B89E2340CDCCCCCCCC6C5340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -686,7 +687,7 @@ void TsGeometry::tcCreatePointM()
     CPPUNIT_ASSERT(size == 29);
     char* wkb = new char[size];
     pt.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01D10700006666666666E632401F85EB51B89E2340CDCCCCCCCC6C5340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -697,7 +698,7 @@ void TsGeometry::tcCreatePointM()
     size_t size = 0;
     char* wkb = pt.asBinary(size);
     CPPUNIT_ASSERT(size == 29);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01D10700006666666666E632401F85EB51B89E2340CDCCCCCCCC6C5340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -765,7 +766,7 @@ void TsGeometry::tcCreatePointZM()
     CPPUNIT_ASSERT(size == 37);
     char* wkb = new char[size];
     pt.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01B90B00006666666666E632401F85EB51B89E2340CDCCCCCCCC6C53400000000000C04B40";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -776,7 +777,7 @@ void TsGeometry::tcCreatePointZM()
     size_t size = 0;
     char* wkb = pt.asBinary(size);
     CPPUNIT_ASSERT(size == 37);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01B90B00006666666666E632401F85EB51B89E2340CDCCCCCCCC6C53400000000000C04B40";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -846,7 +847,7 @@ void TsGeometry::tcCreateLineString()
     CPPUNIT_ASSERT(size == 57);
     char* wkb = new char[size];
     line.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "010200000003000000000000000000F03F000000000000F83F00000000000008406666666666660A406666666666E632401F85EB51B89E2340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -857,7 +858,7 @@ void TsGeometry::tcCreateLineString()
     size_t size = 0;
     char* wkb = line.asBinary(size);
     CPPUNIT_ASSERT(size == 57);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "010200000003000000000000000000F03F000000000000F83F00000000000008406666666666660A406666666666E632401F85EB51B89E2340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -932,7 +933,7 @@ void TsGeometry::tcCreateLineStringZ()
     CPPUNIT_ASSERT(size == 81);
     char* wkb = new char[size];
     line.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01EA03000003000000000000000000F03F000000000000F83F333333333333204000000000000008406666666666660A4066666666666622406666666666E632401F85EB51B89E23408FC2F5285CCF3340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -943,7 +944,7 @@ void TsGeometry::tcCreateLineStringZ()
     size_t size = 0;
     char* wkb = line.asBinary(size);
     CPPUNIT_ASSERT(size == 81);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01EA03000003000000000000000000F03F000000000000F83F333333333333204000000000000008406666666666660A4066666666666622406666666666E632401F85EB51B89E23408FC2F5285CCF3340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -1018,7 +1019,7 @@ void TsGeometry::tcCreateLineStringM()
     CPPUNIT_ASSERT(size == 81);
     char* wkb = new char[size];
     line.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01D207000003000000000000000000F03F000000000000F83F333333333333204000000000000008406666666666660A4066666666666622406666666666E632401F85EB51B89E23408FC2F5285CCF3340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -1029,7 +1030,7 @@ void TsGeometry::tcCreateLineStringM()
     size_t size = 0;
     char* wkb = line.asBinary(size);
     CPPUNIT_ASSERT(size == 81);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01D207000003000000000000000000F03F000000000000F83F333333333333204000000000000008406666666666660A4066666666666622406666666666E632401F85EB51B89E23408FC2F5285CCF3340";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -1108,7 +1109,7 @@ void TsGeometry::tcCreateLineStringZM()
     CPPUNIT_ASSERT(size == 105);
     char* wkb = new char[size];
     line.getWkb(wkb, te::common::Globals::sm_machineByteOrder);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01BA0B000003000000000000000000F03F000000000000F83F3333333333332040CDCCCCCCCC4C354000000000000008406666666666660A4066666666666622409A999999999958406666666666E632401F85EB51B89E23408FC2F5285CCF33400000000000C04540";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -1119,7 +1120,7 @@ void TsGeometry::tcCreateLineStringZM()
     size_t size = 0;
     char* wkb = line.asBinary(size);
     CPPUNIT_ASSERT(size == 105);
-    char* hwkb = te::common::Binary2Hex(wkb, size);
+    char* hwkb = te::core::Binary2Hex(wkb, size);
     delete [] wkb;
     const char* validHWKB = "01BA0B000003000000000000000000F03F000000000000F83F3333333333332040CDCCCCCCCC4C354000000000000008406666666666660A4066666666666622409A999999999958406666666666E632401F85EB51B89E23408FC2F5285CCF33400000000000C04540";
     CPPUNIT_ASSERT(strcmp(hwkb, validHWKB) == 0);
@@ -1307,7 +1308,7 @@ void TsGeometry::tcBasicGeometryMethods()
     const WKBEntry& hwkb = hwkbVec[i];
 
 // convert HWKB to WKB and read the WKB into a TL geometry
-    std::auto_ptr<te::gm::Geometry> g(te::gm::WKBReader::read(te::common::Hex2Binary(hwkb.m_hwkb.c_str())));
+    std::auto_ptr<te::gm::Geometry> g(te::gm::WKBReader::read(te::core::Hex2Binary(hwkb.m_hwkb.c_str())));
     CPPUNIT_ASSERT(g.get());
     g->setSRID(hwkb.m_srid);
 
@@ -1325,7 +1326,7 @@ void TsGeometry::tcBasicGeometryMethods()
     std::cout << "hwkb.m_wkt=" << hwkb.m_wkt << std::endl; 
     size_t wkbSize;
     char* myWkb = g->asBinary(wkbSize);
-    char* myHwkb = te::common::Binary2Hex(myWkb, wkbSize);
+    char* myHwkb = te::core::Binary2Hex(myWkb, wkbSize);
     delete [] myWkb;
     CPPUNIT_ASSERT(myHwkb == hwkb.m_hwkb);
     delete [] myHwkb;

@@ -34,9 +34,6 @@
 #include "DataSourceFactory.h"
 #include "Module.h"
 
-// GDAL
-#include <gdal_priv.h>
-
 // Boost
 #include <boost/functional/factory.hpp>
 #include <boost/bind.hpp>
