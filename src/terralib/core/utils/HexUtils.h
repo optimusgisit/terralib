@@ -25,8 +25,8 @@
   \ingroup core
 */
 
-#ifndef __TERRALIB_COMMON_INTERNAL_HEXUTILS_H
-#define __TERRALIB_COMMON_INTERNAL_HEXUTILS_H
+#ifndef __TERRALIB_CORE_UTILS_HEXUTILS_H
+#define __TERRALIB_CORE_UTILS_HEXUTILS_H
 
 // STL 
 #include <cstring>
@@ -633,5 +633,5 @@ namespace te
   } // end namespace common
 }   // end namespace te
 
-#endif  // __TERRALIB_COMMON_INTERNAL_HEXUTILS_H
+#endif  // __TERRALIB_CORE_UTILS_HEXUTILS_H
 
