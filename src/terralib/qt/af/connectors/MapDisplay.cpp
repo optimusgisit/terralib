@@ -32,7 +32,11 @@
 #include "../../../geometry/Envelope.h"
 #include "../../../geometry/Geometry.h"
 #include "../../../geometry/Utils.h"
+#include "../../../maptools/CanvasConfigurer.h"
 #include "../../../maptools/Utils.h"
+#include "../../../se/Rule.h"
+#include "../../../se/Style.h"
+#include "../../../se/Symbolizer.h"
 #include "../../../srs/Config.h"
 #include "../../widgets/canvas/Canvas.h"
 #include "../../widgets/canvas/EyeBirdMapDisplayWidget.h"
@@ -390,7 +394,10 @@ void te::qt::af::MapDisplay::drawLayerSelection(te::map::AbstractLayerPtr layer)
           // Try to retrieve the layer selection batch
           std::auto_ptr<te::da::DataSet> selected(layer->getData(oidsBatch.get()));
 
-          drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), m_app->getSelectionColor(), te::da::HasLinkedTable(layer->getSchema().get()));
+          if (layer->getSelectionStyle())
+            drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), layer->getSelectionStyle(), te::da::HasLinkedTable(layer->getSchema().get()));
+          else
+            drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), m_app->getSelectionColor(), te::da::HasLinkedTable(layer->getSchema().get()));
 
           // Prepares to next batch
           oidsBatch->clear();
@@ -402,7 +409,10 @@ void te::qt::af::MapDisplay::drawLayerSelection(te::map::AbstractLayerPtr layer)
     {
       std::auto_ptr<te::da::DataSet> selected(layer->getData(oids->getExpression()));
 
-      drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), m_app->getSelectionColor(), te::da::HasLinkedTable(layer->getSchema().get()));
+      if (layer->getSelectionStyle())
+        drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), layer->getSelectionStyle(), te::da::HasLinkedTable(layer->getSchema().get()));
+      else
+        drawDataSet(selected.get(), layer->getGeomPropertyName(), layer->getSRID(), m_app->getSelectionColor(), te::da::HasLinkedTable(layer->getSchema().get()));
     }
   }
   catch(std::exception& e)
@@ -463,6 +473,75 @@ void te::qt::af::MapDisplay::drawDataSet(te::da::DataSet* dataset, const std::st
     if(isLinked)
     {
       if(highlightedGeoms.insert(g->asText()).second)
+      {
+        canvas.draw(g.get());
+      }
+    }
+    else
+      canvas.draw(g.get());
+  }
+}
+
+void te::qt::af::MapDisplay::drawDataSet(te::da::DataSet* dataset, const std::string& geomPropertyName, int srid, te::se::Style* style, bool isLinked)
+{
+  assert(dataset);
+  assert(style);
+
+  if (srid == TE_UNKNOWN_SRS && m_display->getSRID() != TE_UNKNOWN_SRS)
+    return;
+
+  bool needRemap = false;
+
+  if ((srid != TE_UNKNOWN_SRS) && (m_display->getSRID() != TE_UNKNOWN_SRS) && (srid != m_display->getSRID()))
+    needRemap = true;
+
+  std::size_t gpos = std::string::npos;
+  geomPropertyName.empty() ? gpos = te::da::GetFirstPropertyPos(dataset, te::dt::GEOMETRY_TYPE) : gpos = te::da::GetPropertyPos(dataset, geomPropertyName);
+
+  assert(gpos != std::string::npos);
+
+  QPixmap* content = m_display->getDisplayPixmap();
+
+  const te::gm::Envelope& displayExtent = m_display->getExtent();
+
+  te::qt::widgets::Canvas canvas(content);
+  canvas.setWindow(displayExtent.m_llx, displayExtent.m_lly, displayExtent.m_urx, displayExtent.m_ury);
+
+  //configure canvas style
+  te::map::CanvasConfigurer cc(&canvas);
+
+
+  if (style->getRules().empty())
+    return;
+
+  te::se::Rule* rule = style->getRule(0);
+
+  const std::vector<te::se::Symbolizer*>& symbolizers = rule->getSymbolizers();
+
+  if (symbolizers.empty())
+    return;
+
+  te::se::Symbolizer* symb = symbolizers[0];
+
+  cc.config(symb);
+
+
+  dataset->moveBeforeFirst();
+
+  std::set<std::string> highlightedGeoms;
+
+  while (dataset->moveNext())
+  {
+    std::auto_ptr<te::gm::Geometry> g(dataset->getGeometry(gpos));
+    if (needRemap)
+    {
+      g->setSRID(srid);
+      g->transform(m_display->getSRID());
+    }
+
+    if (isLinked)
+    {
+      if (highlightedGeoms.insert(g->asText()).second)
       {
         canvas.draw(g.get());
       }

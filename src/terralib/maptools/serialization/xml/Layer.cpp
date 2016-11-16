@@ -270,6 +270,23 @@ te::map::AbstractLayer* DataSetLayerReader(te::xml::Reader& reader)
     reader.next();
   }
 
+  /* has a Selection Style Element ? */
+  std::auto_ptr<te::se::Style> selectionStyle;
+
+  if ((reader.getNodeType() == te::xml::START_ELEMENT) &&
+    (reader.getElementLocalName() == "SelectionStyle"))
+  {
+    reader.next();
+    assert(reader.getNodeType() == te::xml::START_ELEMENT);
+
+    selectionStyle.reset(te::se::serialize::Style::getInstance().read(reader));
+
+    assert(reader.getNodeType() == te::xml::END_ELEMENT);
+    assert(reader.getElementLocalName() == "SelectionStyle");
+
+    reader.next();
+  }
+
   assert(reader.getNodeType() == te::xml::END_ELEMENT);
   assert(reader.getElementLocalName() == "DataSetLayer");
 
@@ -283,6 +300,7 @@ te::map::AbstractLayer* DataSetLayerReader(te::xml::Reader& reader)
   layer->setRendererType(rendererId);
   layer->setCompositionMode((te::map::CompositionMode)compositionMode);
   layer->setStyle(style.release());
+  layer->setSelectionStyle(selectionStyle.release());
   layer->setSRID(srid);
   layer->setEncoding(te::core::CharEncoding::getEncodingType(encoding));
     
@@ -384,6 +402,23 @@ te::map::AbstractLayer* QueryLayerReader(te::xml::Reader& reader)
     reader.next();
   }
 
+  /* has a Selection Style Element ? */
+  std::auto_ptr<te::se::Style> selectionStyle;
+
+  if ((reader.getNodeType() == te::xml::START_ELEMENT) &&
+    (reader.getElementLocalName() == "SelectionStyle"))
+  {
+    reader.next();
+    assert(reader.getNodeType() == te::xml::START_ELEMENT);
+
+    selectionStyle.reset(te::se::serialize::Style::getInstance().read(reader));
+
+    assert(reader.getNodeType() == te::xml::END_ELEMENT);
+    assert(reader.getElementLocalName() == "SelectionStyle");
+
+    reader.next();
+  }
+
   assert(reader.getNodeType() == te::xml::END_ELEMENT);
   assert(reader.getElementLocalName() == "QueryLayer");
 
@@ -399,6 +434,7 @@ te::map::AbstractLayer* QueryLayerReader(te::xml::Reader& reader)
   layer->setRendererType(rendererId);
   layer->setCompositionMode((te::map::CompositionMode)compositionMode);
   layer->setStyle(style.release());
+  layer->setSelectionStyle(selectionStyle.release());
   layer->setEncoding(te::core::CharEncoding::getEncodingType(encoding));
 
   if(grouping)
@@ -654,6 +690,23 @@ te::map::AbstractLayer* DataSetAdapterLayerReader(te::xml::Reader& reader)
     reader.next();
   }
 
+  /* has a Selection Style Element ? */
+  std::auto_ptr<te::se::Style> selectionStyle;
+
+  if ((reader.getNodeType() == te::xml::START_ELEMENT) &&
+    (reader.getElementLocalName() == "SelectionStyle"))
+  {
+    reader.next();
+    assert(reader.getNodeType() == te::xml::START_ELEMENT);
+
+    selectionStyle.reset(te::se::serialize::Style::getInstance().read(reader));
+
+    assert(reader.getNodeType() == te::xml::END_ELEMENT);
+    assert(reader.getElementLocalName() == "SelectionStyle");
+
+    reader.next();
+  }
+
   assert(reader.getNodeType() == te::xml::START_ELEMENT);
   assert(reader.getElementLocalName() == "Converter");
 
@@ -828,6 +881,7 @@ te::map::AbstractLayer* DataSetAdapterLayerReader(te::xml::Reader& reader)
   result->setRendererType(rendererType);
   result->setCompositionMode((te::map::CompositionMode)compositionMode);
   result->setStyle(style.release());
+  result->setSelectionStyle(selectionStyle.release());
   
   te::da::DataSourcePtr ds = te::da::GetDataSource(dataSourceId);
   std::auto_ptr<te::da::DataSetType> dst = ds->getDataSetType(dataSetName);
@@ -909,6 +963,15 @@ void DataSetLayerWriter(const te::map::AbstractLayer* alayer, te::xml::AbstractW
     writer.writeEndElement("te_map:Style");
   }
 
+  if (layer->getSelectionStyle())
+  {
+    writer.writeStartElement("te_map:SelectionStyle");
+
+    te::se::serialize::Style::getInstance().write(layer->getSelectionStyle(), writer);
+
+    writer.writeEndElement("te_map:SelectionStyle");
+  }
+
   writer.writeEndElement("te_map:DataSetLayer");
 }
 
@@ -941,6 +1004,15 @@ void QueryLayerWriter(const te::map::AbstractLayer* alayer, te::xml::AbstractWri
     te::se::serialize::Style::getInstance().write(layer->getStyle(), writer);
 
     writer.writeEndElement("te_map:Style");
+  }
+
+  if (layer->getSelectionStyle())
+  {
+    writer.writeStartElement("te_map:SelectionStyle");
+
+    te::se::serialize::Style::getInstance().write(layer->getSelectionStyle(), writer);
+
+    writer.writeEndElement("te_map:SelectionStyle");
   }
 
   writer.writeEndElement("te_map:QueryLayer");
@@ -1039,6 +1111,15 @@ void DataSetAdapterLayerWriter(const te::map::AbstractLayer* alayer, te::xml::Ab
     te::se::serialize::Style::getInstance().write(layer->getStyle(), writer);
 
     writer.writeEndElement("te_map:Style");
+  }
+
+  if (layer->getSelectionStyle())
+  {
+    writer.writeStartElement("te_map:SelectionStyle");
+
+    te::se::serialize::Style::getInstance().write(layer->getSelectionStyle(), writer);
+
+    writer.writeEndElement("te_map:SelectionStyle");
   }
 
   te::da::DataSetTypeConverter* converter = layer->getConverter();

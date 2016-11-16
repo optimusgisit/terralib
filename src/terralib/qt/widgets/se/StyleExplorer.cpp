@@ -194,9 +194,9 @@ void te::qt::widgets::StyleExplorer::setLegendIconSize(int size)
   updateStyleTree();
 }
 
-void te::qt::widgets::StyleExplorer::importStyle(te::se::Style* style)
+void te::qt::widgets::StyleExplorer::importStyle(te::se::Style* style, bool isVisual)
 {
-  emit styleImported(style);
+  emit styleImported(style, isVisual);
 }
 
 void te::qt::widgets::StyleExplorer::onSymbolizerChanged(te::se::Symbolizer* symb)

@@ -38,6 +38,7 @@ te::map::AbstractLayer::AbstractLayer(AbstractLayer* parent)
     m_visibilityChanged(false),
     m_selected(0),
     m_style(0),
+    m_selectionStyle(0),
     m_grouping(0),
     m_chart(0),
     m_compositionMode(te::map::SourceOver),
@@ -53,6 +54,7 @@ te::map::AbstractLayer::AbstractLayer(const std::string& id, AbstractLayer* pare
     m_visibilityChanged(false),
     m_selected(0),
     m_style(0),
+    m_selectionStyle(0),
     m_grouping(0),
     m_chart(0),
     m_compositionMode(te::map::SourceOver),
@@ -71,6 +73,7 @@ te::map::AbstractLayer::AbstractLayer(const std::string& id,
     m_visibilityChanged(false),
     m_selected(0),
     m_style(0),
+    m_selectionStyle(0),
     m_grouping(0),
     m_chart(0),
     m_compositionMode(te::map::SourceOver),
@@ -82,6 +85,7 @@ te::map::AbstractLayer::~AbstractLayer()
 {
   delete m_selected;
   delete m_style;
+  delete m_selectionStyle;
   delete m_grouping;
   delete m_chart;
 }
@@ -290,6 +294,17 @@ void te::map::AbstractLayer::setStyle(te::se::Style* style)
 {
   delete m_style;
   m_style = style;
+}
+
+te::se::Style* te::map::AbstractLayer::getSelectionStyle() const
+{
+  return m_selectionStyle;
+}
+
+void te::map::AbstractLayer::setSelectionStyle(te::se::Style* style)
+{
+  delete m_selectionStyle;
+  m_selectionStyle = style;
 }
 
 te::map::Grouping* te::map::AbstractLayer::getGrouping() const

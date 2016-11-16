@@ -87,7 +87,7 @@ namespace te
 
             \note The widget will NOT take the ownership of the given pointers.
           */
-          void setStyle(te::se::Style* style, te::map::AbstractLayer* layer);
+          void setLayer(te::map::AbstractLayer* layer, std::string selColor);
 
           void setTabStatus(bool status);
 
@@ -103,7 +103,7 @@ namespace te
 
           void onSymbolizerSelected(te::se::Symbolizer* s);
 
-          void onStyleImported(te::se::Style* style);
+          void onStyleImported(te::se::Style* style, bool isVisual);
 
           void onPolygonSymbolizerChanged();
           void onLineSymbolizerChanged();
@@ -133,6 +133,7 @@ namespace te
           te::qt::widgets::TextSymbolizerProperty* m_textWidget;
 
           te::map::AbstractLayer* m_currentLayer;                     //!< Current Layer pointer (used for raster symbolizer information)
+          std::string m_selColor;
       };
 
     } // end namespace widgets

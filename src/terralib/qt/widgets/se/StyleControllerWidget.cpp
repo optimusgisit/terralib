@@ -26,6 +26,9 @@
 // TerraLib
 #include "StyleControllerWidget.h"
 #include "../../../core/filesystem/FileSystem.h"
+#include "../../../dataaccess/utils/Utils.h"
+#include "../../../geometry/GeometryProperty.h"
+#include "../../../se/FeatureTypeStyle.h"
 #include "../../../se/Font.h"
 #include "../../../se/Rule.h"
 #include "../../../se/TextSymbolizer.h"
@@ -82,6 +85,8 @@ te::qt::widgets::StyleControllerWidget::StyleControllerWidget(QWidget* parent, Q
   connect(m_ui->m_exportStyleToolButton, SIGNAL(clicked()), this, SLOT(onExportClicked()));
   connect(m_ui->m_importStyleToolButton, SIGNAL(clicked()), this, SLOT(onImportClicked()));
   connect(m_ui->m_mapRefreshToolButton, SIGNAL(clicked()), this, SLOT(onMapRefreshClicked()));
+  connect(m_ui->m_visualStyleRadioButton, SIGNAL(clicked(bool)), SLOT(onVisualStyleChecked(bool)));
+  connect(m_ui->m_selectionStyleRadioButton, SIGNAL(clicked(bool)), SLOT(onSelectionStyleChecked(bool)));
 
   updateUi();
 }
@@ -90,10 +95,54 @@ te::qt::widgets::StyleControllerWidget::~StyleControllerWidget()
 {
 }
 
-void te::qt::widgets::StyleControllerWidget::setStyle(te::se::Style* style)
+void te::qt::widgets::StyleControllerWidget::setLayer(te::map::AbstractLayer* layer, std::string selColor)
 {
-  m_explorer->setStyle(style);
-  m_currentStyle = style;
+  m_currentLayer = layer;
+
+  if (!layer->getSelectionStyle())
+  {
+    std::auto_ptr<te::da::DataSetType> dsType = layer->getSchema();
+
+    if (dsType->hasGeom())
+    {
+      te::gm::GeometryProperty* gp = te::da::GetFirstGeomProperty(dsType.get());
+
+      te::se::Symbolizer* symbolizer = te::se::CreateSymbolizer(gp->getGeometryType(), selColor);
+
+      te::se::Rule* rule = new te::se::Rule;
+
+      if (symbolizer != 0)
+        rule->push_back(symbolizer);
+
+      te::se::FeatureTypeStyle* style = new te::se::FeatureTypeStyle;
+      style->push_back(rule);
+
+      layer->setSelectionStyle(style);
+
+      m_ui->m_selectionStyleRadioButton->setEnabled(true);
+    }
+    else
+    {
+      m_ui->m_visualStyleRadioButton->setChecked(true);
+      m_ui->m_selectionStyleRadioButton->setEnabled(false);
+    }
+  }
+  else
+  {
+    m_ui->m_selectionStyleRadioButton->setEnabled(true);
+  }
+
+  if (m_ui->m_visualStyleRadioButton->isChecked())
+  {
+    m_explorer->setStyle(layer->getStyle());
+    m_currentStyle = layer->getStyle();
+  }
+  else
+  {
+    m_explorer->setStyle(layer->getSelectionStyle());
+    m_currentStyle = layer->getSelectionStyle();
+  }
+
 }
 
 te::qt::widgets::StyleExplorer* te::qt::widgets::StyleControllerWidget::getStyleExplorer() const
@@ -276,6 +325,23 @@ void te::qt::widgets::StyleControllerWidget::changeLegendIconSize(int size)
   m_explorer->setLegendIconSize(size);
 }
 
+void te::qt::widgets::StyleControllerWidget::onVisualStyleChecked(bool state)
+{
+  if (state && m_currentLayer->getStyle())
+  {
+    m_explorer->setStyle(m_currentLayer->getStyle());
+    m_currentStyle = m_currentLayer->getStyle();
+  }
+}
+
+void te::qt::widgets::StyleControllerWidget::onSelectionStyleChecked(bool state)
+{
+  if (state && m_currentLayer->getSelectionStyle())
+  {
+    m_explorer->setStyle(m_currentLayer->getSelectionStyle());
+    m_currentStyle = m_currentLayer->getSelectionStyle();
+  }
+}
 
 void te::qt::widgets::StyleControllerWidget::writeStyle(const te::se::Style* style, std::string path)
 {
@@ -343,7 +409,7 @@ void te::qt::widgets::StyleControllerWidget::readStyle(std::string path)
         if (reader->getNodeType() == te::xml::START_ELEMENT)
           style.reset(te::se::serialize::Style::getInstance().read(*reader.get()));
       }
-      m_explorer->importStyle(style.release());
+      m_explorer->importStyle(style.release(), m_ui->m_visualStyleRadioButton->isChecked());
     }
     else
       QMessageBox::warning(this, tr("Style Explorer"), tr("The selected theme is not compatible with the current data."));

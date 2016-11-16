@@ -269,6 +269,24 @@ namespace te
         virtual void setStyle(te::se::Style* style);
 
         /*!
+        \brief It returns the selection Style associated to the layer.
+
+        \return The Style associated to the layer.
+
+        \note The caller will NOT take the ownership of the given pointer.
+        */
+        virtual te::se::Style* getSelectionStyle() const;
+
+        /*!
+        \brief It sets the selection Style associated to the layer.
+
+        \param style The Style associated to the layer.
+
+        \note The layer will take the ownership of the given pointer.
+        */
+        virtual void setSelectionStyle(te::se::Style* style);
+
+        /*!
           \brief It returns the Grouping associated to the Layer.
 
           \return The Grouping associated to the Layer.
@@ -560,6 +578,7 @@ namespace te
         bool m_visibilityChanged;                    //!< It indicates if the layer visibility has changed.
         te::da::ObjectIdSet* m_selected;             //!< The selected group of the layer.
         te::se::Style* m_style;                      //!< The style to be applied to the geographic objects in the layer.
+        te::se::Style* m_selectionStyle;             //!< The selection style to be applied to the geographic objects in the layer.
         te::map::Grouping* m_grouping;               //!< The grouping information.
         te::map::Chart* m_chart;                     //!< The chart information.
         std::string m_geomPropertyName;              //!< The name of the referenced geometry property.

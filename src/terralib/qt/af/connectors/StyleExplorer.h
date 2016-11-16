@@ -46,6 +46,8 @@ namespace te
 
     namespace af
     {
+      class ApplicationController;
+
       namespace evt
       {
       // Forward declarations
@@ -69,7 +71,7 @@ namespace te
 
             \param explorer te::qt::widgets::StyleDockWidget to be listened.
           */
-          StyleExplorer(te::qt::widgets::StyleDockWidget* explorer, QObject* parent = 0);
+          StyleExplorer(te::qt::widgets::StyleDockWidget* explorer, te::qt::af::ApplicationController* app, QObject* parent = 0);
 
           /*! \brief Destructor. */
           ~StyleExplorer();
@@ -93,7 +95,9 @@ namespace te
 
         protected:
 
-          te::qt::widgets::StyleDockWidget* m_explorer; //!< Pointer to a component te::qt::widgets::StyleDockWidget.
+          te::qt::af::ApplicationController* m_app;                  //!< Pointer to applicatin controller;
+
+          te::qt::widgets::StyleDockWidget* m_explorer;             //!< Pointer to a component te::qt::widgets::StyleDockWidget.
       };
 
     } // end namespace af

@@ -1031,7 +1031,7 @@ void te::qt::af::BaseApplication::makeDialog()
   //start main components
   m_layerExplorer = new LayerExplorer(m_ui->m_layerExplorer);
   m_display = new MapDisplay(m_ui->m_display, m_app);
-  m_styleExplorer = new StyleExplorer(m_ui->m_styleExplorer);
+  m_styleExplorer = new StyleExplorer(m_ui->m_styleExplorer, m_app);
 
   initSlotsConnections();
 
