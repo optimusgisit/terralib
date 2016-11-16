@@ -43,7 +43,6 @@
 // Boost
 #include <boost/uuid/random_generator.hpp>
 #include <boost/uuid/uuid_io.hpp>
-#include <boost/filesystem.hpp>
 #include <boost/lexical_cast.hpp>
 
 // Qt
@@ -109,7 +108,7 @@ void te::qt::plugins::gdal::GDALConnectorDialog::openPushButtonPressed()
     std::string dsInfo = getConnectionInfo();
 
 // perform connection
-    std::unique_ptr<te::da::DataSource> ds = te::da::DataSourceFactory::make("GDAL", getConnectionInfo());
+    std::unique_ptr<te::da::DataSource> ds = te::da::DataSourceFactory::make("GDAL", dsInfo);
     ds->open();
     m_driver.reset(ds.release());
 
@@ -245,7 +244,6 @@ const std::string te::qt::plugins::gdal::GDALConnectorDialog::getConnectionInfo(
   if(qstr.isEmpty())
     throw te::qt::widgets::Exception(TE_TR("Please select a dataset first!"));
 
-  if(te::core::FileSystem::isDirectory(qstr.toUtf8().data()))
   strURI += qstr.toUtf8().data();
 
   return strURI;
@@ -263,10 +261,10 @@ void te::qt::plugins::gdal::GDALConnectorDialog::setConnectionInfo(const  std::s
   {
   m_ui->m_datasetLineEdit->setText(it->second.c_str());
 
-  if(boost::filesystem::is_directory(path))
-  m_ui->m_dirRadioButton->setChecked(true);
-  else if(boost::filesystem::is_regular_file(path))
-  m_ui->m_fileRadioButton->setChecked(true);
+  if(te::core::FileSystem::isDirectory(path))
+    m_ui->m_dirRadioButton->setChecked(true);
+  else if(te::core::FileSystem::isRegularFile(path))
+    m_ui->m_fileRadioButton->setChecked(true);
   }
 }
 

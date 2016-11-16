@@ -281,14 +281,11 @@ const std::string te::qt::plugins::ogr::OGRConnectorDialog::getConnectionInfo() 
 void te::qt::plugins::ogr::OGRConnectorDialog::setConnectionInfo(const std::string& connInfo)
 {
   const te::core::URI uri(connInfo);
-
   std::string path = uri.host() + uri.path();
-  std::map<std::string, std::string> kvp = te::core::Expand(uri.query());
-  std::map<std::string, std::string>::const_iterator it;
 
   if(!path.empty())
   {
-    m_ui->m_featureRepoLineEdit->setText(it->second.c_str());
+    m_ui->m_featureRepoLineEdit->setText(QString::fromUtf8(path.c_str()));
 
     if(boost::filesystem::is_directory(path))
       m_ui->m_dirRadioButton->setChecked(true);
