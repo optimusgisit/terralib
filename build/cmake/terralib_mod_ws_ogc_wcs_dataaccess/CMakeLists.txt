@@ -22,6 +22,7 @@
 #
 #  Author: Vinicius Campanha
 #
+include_directories(${GDAL_INCLUDE_DIR})
 
 if(WIN32)
   add_definitions(-DTEWSWCSDATAACCESSDLL)
