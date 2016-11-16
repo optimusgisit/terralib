@@ -31,9 +31,10 @@
 // STL
 #include <cassert>
 
-te::qt::af::StyleExplorer::StyleExplorer(te::qt::widgets::StyleDockWidget* explorer, QObject* parent)
+te::qt::af::StyleExplorer::StyleExplorer(te::qt::widgets::StyleDockWidget* explorer, te::qt::af::ApplicationController* app, QObject* parent)
   : QObject(parent),
-    m_explorer(explorer)
+    m_explorer(explorer),
+    m_app(app)
 {
   assert(explorer);
 
@@ -61,7 +62,7 @@ void te::qt::af::StyleExplorer::onApplicationTriggered(te::qt::af::evt::Event* e
       assert(layer);
 
       if(layer->isValid() && layer->getStyle())
-        m_explorer->setStyle(layer->getStyle(), layer.get());
+        m_explorer->setLayer(layer.get(), m_app->getSelectionColor().name(QColor::HexRgb).toStdString());
     }
     break;
 
@@ -72,7 +73,7 @@ void te::qt::af::StyleExplorer::onApplicationTriggered(te::qt::af::evt::Event* e
       te::map::AbstractLayerPtr layer = e->m_layer;
       assert(layer);
 
-      m_explorer->setStyle(layer->getStyle(), layer.get());
+      m_explorer->setLayer(layer.get(), m_app->getSelectionColor().name(QColor::HexArgb).toStdString());
 
       m_explorer->setVisible(true);
     }

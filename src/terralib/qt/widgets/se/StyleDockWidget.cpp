@@ -44,7 +44,8 @@
 
 te::qt::widgets::StyleDockWidget::StyleDockWidget(QWidget* parent, Qt::WindowFlags flags)
   : QDockWidget("Style Explorer", parent, flags),
-    m_currentLayer(0)
+    m_currentLayer(0),
+    m_selColor("")
 {
   // Build form
   this->setWidget(buildUi());
@@ -54,10 +55,11 @@ te::qt::widgets::StyleDockWidget::~StyleDockWidget()
 {
 }
 
-void te::qt::widgets::StyleDockWidget::setStyle(te::se::Style* style, te::map::AbstractLayer* layer)
+void te::qt::widgets::StyleDockWidget::setLayer(te::map::AbstractLayer* layer, std::string selColor)
 {
+  m_selColor = selColor;
   m_currentLayer = layer;
-  m_styleController->setStyle(style);
+  m_styleController->setLayer(layer, selColor);
 }
 
 void te::qt::widgets::StyleDockWidget::setTabStatus(bool status)
@@ -89,7 +91,7 @@ QWidget* te::qt::widgets::StyleDockWidget::buildUi()
   connect(m_styleController, SIGNAL(mapRefresh()), this, SLOT(onMapRefresh()));
   connect(m_styleController->getStyleExplorer(), SIGNAL(symbolizerClicked(te::se::Symbolizer*)), this, SLOT(onSymbolizerSelected(te::se::Symbolizer*)));
   connect(m_styleController->getStyleExplorer(), SIGNAL(ruleClicked(te::se::Rule*)), this, SLOT(onRuleSelected(te::se::Rule*)));
-  connect(m_styleController->getStyleExplorer(), SIGNAL(styleImported(te::se::Style*)), this, SLOT(onStyleImported(te::se::Style*)));
+  connect(m_styleController->getStyleExplorer(), SIGNAL(styleImported(te::se::Style*, bool)), this, SLOT(onStyleImported(te::se::Style*, bool)));
   connect(this, SIGNAL(symbolizerChanged(te::se::Symbolizer*)), m_styleController->getStyleExplorer(), SLOT(onSymbolizerChanged(te::se::Symbolizer*)));
 
   // Tab widget
@@ -211,11 +213,14 @@ void te::qt::widgets::StyleDockWidget::onSymbolizerSelected(te::se::Symbolizer* 
   }
 }
 
-void te::qt::widgets::StyleDockWidget::onStyleImported(te::se::Style* style)
+void te::qt::widgets::StyleDockWidget::onStyleImported(te::se::Style* style, bool isVisual)
 {
-  m_currentLayer->setStyle(style);
+  if (isVisual)
+    m_currentLayer->setStyle(style);
+  else
+    m_currentLayer->setSelectionStyle(style);
 
-  m_styleController->setStyle(style);
+  m_styleController->setLayer(m_currentLayer, m_selColor);
 
   emit symbolChanged(m_currentLayer);
 }

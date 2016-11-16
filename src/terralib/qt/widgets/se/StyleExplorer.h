@@ -129,7 +129,7 @@ namespace te
 
           void setLegendIconSize(int size);
 
-          void importStyle(te::se::Style* style);
+          void importStyle(te::se::Style* style, bool isVisual);
 
         public slots:
 
@@ -166,7 +166,7 @@ namespace te
           /*! This signal is emitted when a symbolizer is clicked. */
           void symbolizerClicked(te::se::Symbolizer* symb);
 
-          void styleImported(te::se::Style* style);
+          void styleImported(te::se::Style* style, bool isVisual);
 
         private:
 

@@ -27,6 +27,7 @@
 #define __TERRALIB_QT_WIDGETS_SE_INTERNAL_STYLECONTROLLERWIDGET_H
 
 // TerraLib
+#include "../../../maptools/AbstractLayer.h"
 #include "../Config.h"
 
 // Qt
@@ -91,7 +92,7 @@ namespace te
             \note The widget will NOT take the ownership of the given style.
             \note The widget will be update based on given style parameters.
           */
-          void setStyle(te::se::Style* style);
+          void setLayer(te::map::AbstractLayer* layer, std::string selColor);
 
           StyleExplorer* getStyleExplorer() const;
 
@@ -130,6 +131,10 @@ namespace te
 
           void changeLegendIconSize(int size);
 
+          void onVisualStyleChecked(bool state);
+
+          void onSelectionStyleChecked(bool state);
+
         signals:
 
           void mapRefresh();
@@ -139,6 +144,8 @@ namespace te
           std::auto_ptr<Ui::StyleControllerWidgetForm> m_ui; //!< Widget form.
           te::qt::widgets::StyleExplorer* m_explorer;        //!< A style explorer used to explore the style.
           te::se::Style* m_currentStyle;                     //!< current style.
+
+          te::map::AbstractLayer* m_currentLayer;            //!< Current Layer pointer (used for raster symbolizer information)
       }; 
 
     } // end namespace widgets
