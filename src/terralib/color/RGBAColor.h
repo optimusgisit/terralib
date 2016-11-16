@@ -27,7 +27,7 @@
 #define __TERRALIB_COLOR_INTERNAL_RGBACOLOR_H
 
 // TerraLib
-#include "../common/HexUtils.h"
+#include "../core/utils/HexUtils.h"
 #include "Config.h"
 
 // STL 
@@ -331,16 +331,16 @@ namespace te
       assert(hexColor.size() == 7);
       assert(hexColor[0] == '#');
 
-      unsigned char highR = te::common::GetDecimalFromHexNotCS(hexColor[1]);
-      unsigned char lowR =  te::common::GetDecimalFromHexNotCS(hexColor[2]);
+      unsigned char highR = te::core::GetDecimalFromHexNotCS(hexColor[1]);
+      unsigned char lowR =  te::core::GetDecimalFromHexNotCS(hexColor[2]);
       int r = int((highR << 4) + lowR);
 
-      unsigned char highG = te::common::GetDecimalFromHexNotCS(hexColor[3]);
-      unsigned char lowG = te::common::GetDecimalFromHexNotCS(hexColor[4]);
+      unsigned char highG = te::core::GetDecimalFromHexNotCS(hexColor[3]);
+      unsigned char lowG = te::core::GetDecimalFromHexNotCS(hexColor[4]);
       int g = int((highG << 4) + lowG);
 
-      unsigned char highB = te::common::GetDecimalFromHexNotCS(hexColor[5]);
-      unsigned char lowB = te::common::GetDecimalFromHexNotCS(hexColor[6]);
+      unsigned char highB = te::core::GetDecimalFromHexNotCS(hexColor[5]);
+      unsigned char lowB = te::core::GetDecimalFromHexNotCS(hexColor[6]);
       int b = int((highB << 4) + lowB);
 
       setColor(r, g, b, TE_OPAQUE);

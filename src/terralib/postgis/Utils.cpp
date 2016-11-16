@@ -24,7 +24,7 @@
 */
 
 // TerraLib
-#include "../common/HexUtils.h"
+#include "../core/utils/HexUtils.h"
 #include "../core/translator/Translator.h"
 #include "../core/uri/URI.h"
 #include "../core/utils/URI.h"
@@ -602,7 +602,7 @@ std::string te::pgis::GetSQLValue(const te::dt::Property* p, std::size_t propert
 
         char* hewkb = new char[ewkbsize * 2  + 1];
 
-        te::common::Binary2Hex(ewkb, ewkbsize, hewkb);
+        te::core::Binary2Hex(ewkb, ewkbsize, hewkb);
 
         //value += "GeomFromEWKB(E'\\\\x";
         value += "'";

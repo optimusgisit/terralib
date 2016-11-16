@@ -59,6 +59,8 @@ endif()
 
 set(TERRALIB_LIBRARIES_DEPENDENCIES "terralib_mod_common")
 
+list(APPEND TERRALIB_LIBRARIES_DEPENDENCIES "terralib_mod_core")
+
 list(APPEND TERRALIB_LIBRARIES_DEPENDENCIES "terralib_mod_datatype")
 
 if(TERRALIB_MOD_XML_ENABLED)
