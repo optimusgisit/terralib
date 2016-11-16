@@ -40,6 +40,55 @@
 
 BOOST_AUTO_TEST_SUITE ( rasterIterator_tests )
 
+void drawPolygonInRaster( const te::gm::Polygon& polygon,
+  const unsigned char polValue,
+  const te::rst::Grid& rasterGrid, const std::string& rasterFileName )
+{
+  std::unique_ptr< te::rst::Raster > rasterPointer;
+  {
+    std::vector< te::rst::BandProperty * > bandsProps;
+    bandsProps.push_back( new te::rst::BandProperty( 0,
+        te::dt::UCHAR_TYPE ) );
+    bandsProps[ 0 ]->m_noDataValue = 255;
+
+    std::map< std::string, std::string > rasterInfo;
+    rasterInfo[ "URI" ] = rasterFileName;
+
+    rasterPointer.reset( te::rst::RasterFactory::make( "GDAL",
+      new te::rst::Grid( rasterGrid ), bandsProps,
+      rasterInfo, 0, 0 ) );
+
+    const unsigned int nLines = rasterPointer->getNumberOfRows();
+    const unsigned nCols = rasterPointer->getNumberOfColumns();
+    unsigned int band = 0;
+    unsigned int line = 0;
+    unsigned int col = 0;
+
+    for( line = 0 ; line < nLines ; ++line )
+    {
+      for( col = 0 ; col < nCols ; ++col )
+      {
+        rasterPointer->setValue( col, line, 0, band );
+      }
+    }
+  }
+
+  te::rst::PolygonIterator< double > it =
+      te::rst::PolygonIterator< double >::begin(rasterPointer.get(),
+      &polygon);
+  const te::rst::PolygonIterator< double > itEnd =
+      te::rst::PolygonIterator< double >::end(rasterPointer.get(),
+      &polygon);
+
+  int col = 0;
+  int row = 0;
+  while (it != itEnd)
+  {
+    rasterPointer->setValue(it.getColumn(), it.getRow(), (double)polValue, 0);
+    ++it;
+  }
+}
+
 void CreateTestRaster( unsigned int nBands, unsigned int nLines,
   unsigned int nCols, boost::shared_ptr< te::rst::Raster >& rasterPointer, bool zero )
 {
@@ -416,6 +465,102 @@ BOOST_AUTO_TEST_CASE (polygonIterator2_test)
     }
     
     Copy2DiskRaster( *rasterPointer, "polygonIterator2_test.tif" );
+}
+
+BOOST_AUTO_TEST_CASE (polygonIterator3_outsidepol_test)
+{
+  te::rst::Grid rasterGrid( 3, 3 );
+  std::vector<te::gm::Polygon*> polVector( 1 );
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = createSquare(0, 0, 2.0, 0);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test1.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test1.tif" );
+  }
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = createSquare(
+      rasterGrid.getExtent()->m_urx,
+      rasterGrid.getExtent()->m_lly,
+      2.0, 0);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test2.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test2.tif" );
+  }
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = createSquare(
+      rasterGrid.getExtent()->getCenter().x,
+      rasterGrid.getExtent()->getCenter().y,
+      4.0, 0);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test3.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test3.tif" );
+  }
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = createSquare(
+      rasterGrid.getExtent()->m_urx +
+      rasterGrid.getResolutionX(),
+      rasterGrid.getExtent()->m_ury +
+      rasterGrid.getResolutionY(),
+      2.0, 0);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test4.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test4.tif" );
+  }
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = createSquare(
+      rasterGrid.getExtent()->m_urx +
+      ( 2 * rasterGrid.getResolutionX() ),
+      rasterGrid.getExtent()->getCenter().y,
+      2.0, 0);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test5.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test5.tif" );
+  }
+
+  {
+    std::auto_ptr< te::gm::Polygon > polygonPtr( new te::gm::Polygon(0, te::gm::PolygonType,
+      0) );
+    te::gm::LinearRing* linearRingPtr = new te::gm::LinearRing(9, te::gm::LineStringType, 0);
+    linearRingPtr->setPoint(0, -1, 1);
+    linearRingPtr->setPoint(1, 0, 1);
+    linearRingPtr->setPoint(2, 0, -3);
+    linearRingPtr->setPoint(3, 3, -3);
+    linearRingPtr->setPoint(4, 3, 1);
+    linearRingPtr->setPoint(5, 4, 1);
+    linearRingPtr->setPoint(6, 4, -4);
+    linearRingPtr->setPoint(7, -1, -4);
+    linearRingPtr->setPoint(8, -1, 1);
+    polygonPtr->add(linearRingPtr);
+    polVector[ 0 ] = polygonPtr.get();
+    Copy2DiskShp( polVector, "polygonIterator3_outsidepol_test6.shp" );
+    drawPolygonInRaster( *polygonPtr, 1, rasterGrid,
+      "polygonIterator3_outsidepol_test6.tif" );
+  }
 }
 
 BOOST_AUTO_TEST_SUITE_END ()
