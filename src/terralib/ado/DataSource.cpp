@@ -27,7 +27,7 @@
 #include "../common/Exception.h"
 #include "../core/filesystem/FileSystem.h"
 #include "../core/translator/Translator.h"
-#include "../core/utils/URI.h"
+#include "../core/uri/Utils.h"
 #include "../dataaccess/datasource/DataSourceTransactor.h"
 #include "../dataaccess/query/SQLDialect.h"
 #include "../datatype/StringProperty.h"

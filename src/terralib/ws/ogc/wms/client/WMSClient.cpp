@@ -85,6 +85,7 @@ const te::ws::ogc::wms::WMSGetMapResponse te::ws::ogc::WMSClient::getMap(const t
 {
   te::ws::ogc::wms::WMSGetMapResponse response;
 
+  //Sets base URL
   std::string url = m_uri.uri();
 
   if(m_version == "1.3.0")

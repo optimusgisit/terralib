@@ -29,7 +29,7 @@
 #include "../../../../common/StringUtils.h"
 #include "../../../../core/translator/Translator.h"
 #include "../../../../core/uri/URI.h"
-#include "../../../../core/utils/URI.h"
+#include "../../../../core/uri/Utils.h"
 #include "../../../../dataaccess/datasource/DataSourceTransactor.h"
 #include "DataSource.h"
 #include "Exception.h"
@@ -78,7 +78,7 @@ void te::ws::ogc::wcs::da::DataSource::open()
   {
     std::map<std::string, std::string> kvp = te::core::Expand(m_uri.query());
 
-    m_wcs = std::shared_ptr<te::ws::ogc::WCSClient>(new te::ws::ogc::WCSClient(kvp["USERDATADIR"], m_uri.uri(), kvp["VERSION"]));
+    m_wcs = std::shared_ptr<te::ws::ogc::WCSClient>(new te::ws::ogc::WCSClient(kvp["USERDATADIR"], kvp["URI"], kvp["VERSION"]));
 
     m_wcs->updateCapabilities();
   }
@@ -115,7 +115,7 @@ bool te::ws::ogc::wcs::da::DataSource::isValid() const
 
     std::map<std::string, std::string> kvp = te::core::Expand(m_uri.query());
 
-    te::ws::ogc::WCSClient wcs(kvp["USERDATADIR"], m_uri.uri(), kvp["VERSION"]);
+    te::ws::ogc::WCSClient wcs(kvp["USERDATADIR"], kvp["URI"], kvp["VERSION"]);
 
     wcs.updateCapabilities();
   }
@@ -161,14 +161,10 @@ bool te::ws::ogc::wcs::da::DataSource::exists(const std::string& connInfo)
   if (!aux.isValid())
     return false;
 
-  std::string uri = aux.uri();
-  if (uri.empty())
-    return false;
-
   std::map<std::string, std::string> kvp = te::core::Expand(m_uri.query());
   std::map<std::string, std::string>::const_iterator it = kvp.begin();
   std::map<std::string, std::string>::const_iterator itend = kvp.end();
-  std::string usrDataDir, version;
+  std::string usrDataDir, version, uri;
 
   it = kvp.find("USERDATADIR");
   if (it == itend || it->second.empty())
@@ -181,6 +177,12 @@ bool te::ws::ogc::wcs::da::DataSource::exists(const std::string& connInfo)
     return false;
   else
     version = it->second;
+
+  it = kvp.find("URI");
+  if (it == itend || it->second.empty())
+    return false;
+  else
+    uri = it->second;
 
   try
   {
@@ -217,8 +219,9 @@ void te::ws::ogc::wcs::da::DataSource::verifyConnectionInfo() const
   std::map<std::string, std::string>::const_iterator it = kvp.begin();
   std::map<std::string, std::string>::const_iterator itend = kvp.end();
 
-  if(m_uri.path().empty())
-    throw Exception(TE_TR("The connection information is invalid. Missing the path parameter!"));
+  it = kvp.find("URI");
+  if (it == itend || it->second.empty())
+    throw Exception(TE_TR("The connection information is invalid. Missing URI parameter!"));
 
   it = kvp.find("VERSION");
   if (it == itend || it->second.empty())

@@ -30,7 +30,7 @@
 // TerraLib
 #include "../../../../core/translator/Translator.h"
 #include "../../../../core/uri/URI.h"
-#include "../../../../core/utils/URI.h"
+#include "../../../../core/uri/Utils.h"
 #include "../../../../dataaccess/datasource/DataSource.h"
 #include "../../../../dataaccess/datasource/DataSourceFactory.h"
 #include "../../../../dataaccess/datasource/DataSourceInfo.h"
@@ -205,14 +205,19 @@ void te::ws::ogc::wcs::qt::WCSConnectorDialog::helpPushButtonPressed()
 
 const std::string te::ws::ogc::wcs::qt::WCSConnectorDialog::getConnectionInfo() const
 {
-  QString qstr; // Auxiliary string used to hold temporary data
+  std::string strURI("wcs://");
 
   // Get the server URL
-  qstr = m_ui->m_serverLineEdit->text().trimmed();
-  if(qstr.isEmpty())
+  std::string serviceURL = m_ui->m_serverLineEdit->text().trimmed().toUtf8().constData();
+
+  if (serviceURL.empty())
     throw te::ws::ogc::wcs::da::Exception(TE_TR("Please define the server address first!"));
 
+  std::string encodedURL = te::core::URIEncode(serviceURL);
+
   std::string usrDataDir = te::qt::af::AppCtrlSingleton::getInstance().getUserDataDir().toUtf8().data();
-  std::string strURI(std::string(qstr.toUtf8().data()) + "?VERSION=2.0.1" + "&USERDATADIR=" + usrDataDir);
+
+  strURI = strURI + "?URI="+ encodedURL + "&VERSION=2.0.1" + "&USERDATADIR=" + usrDataDir;
+
   return strURI;
 }

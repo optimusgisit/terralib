@@ -62,12 +62,16 @@ struct te::ws::core::CurlWrapper::Impl
   std::string            m_taskMessage;
   std::string            m_response;
   long                   m_responseCode;
+  std::string            m_username;
+  std::string            m_password;
+  te::ws::core::AuthenticationMethod  m_method;
 };
 
 te::ws::core::CurlWrapper::CurlWrapper()
 {
   m_pimpl.reset(new Impl);
   m_pimpl->m_curl = std::shared_ptr<CURL>(curl_easy_init(), curl_easy_cleanup);
+  m_pimpl->m_method = AuthenticationMethod::NOT_AUTH;
 }
 
 
@@ -88,12 +92,13 @@ void te::ws::core::CurlWrapper::clean()
 #endif
 }
 
-
 size_t WriteFileCallback(void *ptr, size_t size, size_t nmemb, void *data)
 {
   std::FILE *writehere = (std::FILE *)data;
   return fwrite(ptr, size, nmemb, writehere);
 }
+
+
 
 size_t WriteResponse(char* data, size_t size, size_t nmemb, std::string* buffer)
 {
@@ -393,6 +398,12 @@ void te::ws::core::CurlWrapper::get(const te::core::URI &uri, std::string &buffe
 
   curl_easy_setopt(m_pimpl->m_curl.get(), CURLOPT_WRITEDATA, &buffer);
 
+  if(m_pimpl->m_method != AuthenticationMethod::NOT_AUTH)
+  {
+    this->addAuthParameters();
+  }
+
+
   /* Perform the request, status will get the return code */
   CURLcode status = curl_easy_perform(m_pimpl->m_curl.get());
 
@@ -426,4 +437,57 @@ const long te::ws::core::CurlWrapper::responseCode() const
 const std::string& te::ws::core::CurlWrapper::response() const
 {
   return m_pimpl->m_response;
+}
+
+void te::ws::core::CurlWrapper::setAuthenticationMethod(const te::ws::core::AuthenticationMethod &method)
+{
+  m_pimpl->m_method = method;
+}
+
+te::ws::core::AuthenticationMethod te::ws::core::CurlWrapper::getAuthenticationMethod() const
+{
+  return m_pimpl->m_method;
+}
+
+void te::ws::core::CurlWrapper::setUsername(const std::string &username)
+{
+  m_pimpl->m_username = username;
+}
+
+std::string te::ws::core::CurlWrapper::getUsername() const
+{
+  return m_pimpl->m_username;
+}
+
+void te::ws::core::CurlWrapper::setPassword(const std::string &password)
+{
+  m_pimpl->m_password = password;
+}
+
+void te::ws::core::CurlWrapper::addAuthParameters()
+{
+  if(m_pimpl->m_username.empty() || m_pimpl->m_password.empty())
+  {
+    return;
+  }
+
+  std::string userAndPassword = m_pimpl->m_username + std::string(":") + m_pimpl->m_password;
+
+  switch(m_pimpl->m_method)
+  {
+
+  case NOT_AUTH:
+    break;
+
+  case HTTP_BASIC:
+    curl_easy_setopt(m_pimpl->m_curl.get(), CURLOPT_HTTPAUTH, CURLAUTH_BASIC);
+    curl_easy_setopt(m_pimpl->m_curl.get(), CURLOPT_USERPWD, userAndPassword.c_str());
+    break;
+
+  case HTTP_DIGEST:
+    curl_easy_setopt(m_pimpl->m_curl.get(), CURLOPT_HTTPAUTH, CURLAUTH_DIGEST);
+    curl_easy_setopt(m_pimpl->m_curl.get(), CURLOPT_USERPWD, userAndPassword.c_str());
+    break;
+
+  }
 }

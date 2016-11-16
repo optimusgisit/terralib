@@ -19,7 +19,7 @@
  */
  
  /*!
-  \file terralib/core/utils/URI.h
+  \file terralib/core/uri/Utils.h
 
   \brief  This file contains utility functions used to manipulate data from a URI.
 
@@ -51,6 +51,26 @@ namespace te
       \return A container with the key-value pairs extracted from the query string.
     */
     TECOREEXPORT std::map<std::string, std::string> Expand(const std::string& query_str);
+
+    /*!
+      \brief Decodes an encoded URI. The algorithm implementation is based on
+      http://www.codeguru.com/cpp/cpp/algorithms/strings/article.php/c12759/URI-Encoding-and-Decoding.htm
+
+      \param srcUri URI to be decoded
+
+      \return A string with decoded URI.
+    */
+    TECOREEXPORT std::string URIDecode(const std::string& srcUri);
+
+    /*!
+      \brief Encodes an decoded URI. The algorithm implementation is based on
+      http://www.codeguru.com/cpp/cpp/algorithms/strings/article.php/c12759/URI-Encoding-and-Decoding.htm
+
+      \param srcUri URI to be encoded
+
+      \return A string with encoded URI.
+    */
+    TECOREEXPORT std::string URIEncode(const std::string& srcUri);
   }
 }  
 #endif //__TERRALIB_CORE_UTILS_URI_H__

@@ -6,14 +6,14 @@
    <rect>
     <x>0</x>
     <y>0</y>
-    <width>400</width>
-    <height>283</height>
+    <width>405</width>
+    <height>379</height>
    </rect>
   </property>
   <property name="windowTitle">
    <string>WMS Connector</string>
   </property>
-  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,1,0,0">
+  <layout class="QVBoxLayout" name="verticalLayout" stretch="0,0,0,0,0,0,1,0,0,0">
    <item>
     <widget class="QFrame" name="frame_2">
      <property name="styleSheet">
@@ -99,6 +99,47 @@
       <string>A more detailed description about the data source</string>
      </property>
     </widget>
+   </item>
+   <item>
+    <layout class="QGridLayout" name="m_authGridLayout">
+     <item row="4" column="1">
+      <widget class="QLineEdit" name="m_authPasswordLineEdit">
+       <property name="echoMode">
+        <enum>QLineEdit::Password</enum>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="0">
+      <widget class="QLabel" name="m_authUsernameLabel">
+       <property name="text">
+        <string>Username:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="4" column="0">
+      <widget class="QLabel" name="m_authPasswordLabel">
+       <property name="text">
+        <string>Password:</string>
+       </property>
+       <property name="alignment">
+        <set>Qt::AlignRight|Qt::AlignTrailing|Qt::AlignVCenter</set>
+       </property>
+      </widget>
+     </item>
+     <item row="3" column="1">
+      <widget class="QLineEdit" name="m_authUsernameLineEdit"/>
+     </item>
+     <item row="2" column="1">
+      <widget class="QCheckBox" name="m_authCheckBox">
+       <property name="text">
+        <string>Authentication</string>
+       </property>
+      </widget>
+     </item>
+    </layout>
    </item>
    <item>
     <widget class="Line" name="line_2">

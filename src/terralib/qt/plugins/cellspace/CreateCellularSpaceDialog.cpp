@@ -30,7 +30,7 @@
 #include "../../../common/StringUtils.h"
 #include "../../../core/translator/Translator.h"
 #include "../../../core/uri/URI.h"
-#include "../../../core/utils/URI.h"
+#include "../../../core/uri/Utils.h"
 #include "../../../common/UnitsOfMeasureManager.h"
 #include "../../../dataaccess/datasource/DataSource.h"
 #include "../../../dataaccess/datasource/DataSourceFactory.h"

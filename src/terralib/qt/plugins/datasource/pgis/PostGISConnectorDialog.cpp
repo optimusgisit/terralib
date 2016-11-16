@@ -26,7 +26,7 @@
 // TerraLib
 #include "../../../../core/translator/Translator.h"
 #include "../../../../core/uri/URI.h"
-#include "../../../../core/utils/URI.h"
+#include "../../../../core/uri/Utils.h"
 #include "../../../../dataaccess/datasource/DataSource.h"
 #include "../../../../dataaccess/datasource/DataSourceFactory.h"
 #include "../../../../dataaccess/datasource/DataSourceManager.h"

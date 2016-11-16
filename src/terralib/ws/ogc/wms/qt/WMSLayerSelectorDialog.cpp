@@ -23,7 +23,8 @@
 #include "ui_WMSLayerSelectorDialogForm.h"
 #include "../../../../core/translator/Translator.h"
 #include "../../../../core/uri/URI.h"
-#include "../../../../core/utils/URI.h"
+#include "../../../../core/uri/Utils.h"
+#include "../../../core/CurlWrapper.h"
 #include "../../../../dataaccess/datasource/DataSource.h"
 #include "../dataaccess/Transactor.h"
 
@@ -78,7 +79,7 @@ void te::ws::ogc::wms::qt::WMSLayerSelectorDialog::set(const te::da::DataSourceI
   const te::core::URI& connInfo = m_datasourceInfo->getConnInfo();
   std::map<std::string, std::string> kvp = te::core::Expand(connInfo.query());
 
-  m_client.reset(new te::ws::ogc::WMSClient(kvp["USERDATADIR"], connInfo.uri(), kvp["VERSION"]));
+  m_client.reset(new te::ws::ogc::WMSClient(kvp["USERDATADIR"], kvp["URI"], kvp["VERSION"]));
   m_client->updateCapabilities();
 
   m_rootLayer = m_client->getCapabilities().m_capability.m_layer;

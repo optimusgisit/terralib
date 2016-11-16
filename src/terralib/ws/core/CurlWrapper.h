@@ -44,6 +44,13 @@ namespace te
     namespace core
     {
 
+    TEWSCOREEXPORT enum AuthenticationMethod
+    {
+      NOT_AUTH    = 0,
+      HTTP_BASIC  = 1,
+      HTTP_DIGEST = 2
+    };
+
     /*!
       \class CurlWrapper
 
@@ -138,12 +145,52 @@ namespace te
        */
       virtual const std::string& response() const;
 
-      protected:
+      /*!
+       * \brief Sets the authentication method that will be used on the requests.
+       *
+       * \param method (e. g.: Basic or Digest)
+       */
+      virtual void setAuthenticationMethod(const AuthenticationMethod& method);
+
+      /*!
+       * \brief Gets current AuthenticationMethod.
+       *
+       * \return current AuthenticationMethod.
+       */
+      virtual AuthenticationMethod getAuthenticationMethod() const;
+
+      /*!
+       * \brief Sets the user name that will be used when an athentication method is set.
+       *
+       * \param username
+       */
+      virtual void setUsername(const std::string& username);
+
+      /*!
+       * \brief Gets the user name that will be used when an athentication method is set.
+       *
+       * \return username
+       */
+      virtual std::string getUsername() const;
+
+      /*!
+       * \brief Sets the password that will be used when an athentication method is set.
+       *
+       * \param password
+       */
+      virtual void setPassword(const std::string& password);
+
+    protected:
 
       /*!
        * \brief Reset the curl handle and the class members
        */
       virtual void clean();
+
+      /*!
+       * \brief Adds HTTP Authentication parameters according to the current AuthenticationMethod.
+       */
+      virtual void addAuthParameters();
 
     private:
       struct Impl;

@@ -29,7 +29,7 @@
 #include <terralib/core/plugin.h>
 #include <terralib/common/TerraLib.h>
 #include <terralib/core/uri/URI.h>
-#include <terralib/core/utils/URI.h>
+#include <terralib/core/uri/Utils.h>
 
 #include <terralib/dataaccess/datasource/DataSourceFactory.h>
 
