@@ -57,6 +57,8 @@
 #include "../../widgets/Utils.h"
 #include "../../widgets/canvas/MapDisplay.h"
 #include "../../widgets/canvas/MultiThreadMapDisplay.h"
+#include "../../widgets/layer/explorer/LayerItemView.h"
+#include "../../widgets/layer/utils/CreateLayerDialog.h"
 #include "../../af/ApplicationController.h"
 #include "../../af/events/ApplicationEvents.h"
 #include "../../af/events/LayerEvents.h"
@@ -100,6 +102,7 @@ QObject(parent),
   m_mergeGeometriesToolAction(0),
   m_createPointToolAction(0),
   m_deletePartToolAction(0),
+  m_createLayerAction(0),
   m_undoToolAction(0),
   m_redoToolAction(0),
   m_undoView(0),
@@ -279,6 +282,7 @@ void te::qt::plugins::edit::ToolBar::initialize()
     m_tools[i]->setEnabled(true);
 
   m_snapOptionsAction->setEnabled(true);
+  m_createLayerAction->setEnabled(true);
 
   enableActionsByGeomType(m_tools, false);
 }
@@ -334,6 +338,7 @@ void te::qt::plugins::edit::ToolBar::initializeActions()
   createAction(m_deleteGeometryToolAction, tr("Delete Geometry"), "edit-deletetool", true, false, "delete_geometry", SLOT(onDeleteGeometryToolActivated(bool)));
   createAction(m_deletePartToolAction, tr("Delete Part"), "edit-deleteparttool", true, false, "delete_part", SLOT(onDeletePartToolActivated(bool)));
   createAction(m_snapOptionsAction, tr("Snap Options"), "edit_snap", false, false, "snap_option", SLOT(onSnapOptionsActivated()));
+  createAction(m_createLayerAction, tr("Create Layer..."), "layer-new", false, false, "create_layer", SLOT(onCreateLayerActivated()));
 
   m_toolBar->addAction(m_saveAction);
   m_toolBar->addSeparator();
@@ -358,6 +363,8 @@ void te::qt::plugins::edit::ToolBar::initializeActions()
   m_toolBar->addAction(m_deletePartToolAction);
   m_toolBar->addSeparator();
   m_toolBar->addAction(m_snapOptionsAction);
+  m_toolBar->addSeparator();
+  m_toolBar->addAction(m_createLayerAction);
 
   // Get the action group of map tools.
   QActionGroup* toolsGroup = te::qt::af::AppCtrlSingleton::getInstance().findActionGroup("Map.ToolsGroup");
@@ -1021,6 +1028,36 @@ void te::qt::plugins::edit::ToolBar::onDeletePartToolActivated(bool /*checked*/)
   assert(e.m_display);
 
   setCurrentTool(new te::edit::DeletePartTool(e.m_display->getDisplay(), layer, this), e.m_display);
+}
+
+void te::qt::plugins::edit::ToolBar::onCreateLayerActivated()
+{
+  //show interface
+  te::qt::widgets::CreateLayerDialog dlg(this->m_toolBar);
+
+  if (dlg.exec() == QDialog::Accepted)
+  {
+    te::qt::af::evt::GetLayerExplorer e;
+    emit triggered(&e);
+
+    std::list<te::map::AbstractLayerPtr> list;
+    list.push_back(dlg.getLayer());
+
+    //set the layer visibility
+    list.begin()->get()->setVisibility(te::map::VISIBLE);
+
+    //insert in tree
+    e.m_layerExplorer->addLayers(list, QModelIndex());
+
+    te::qt::af::evt::GetMapDisplay d;
+    emit triggered(&d);
+
+    std::list<te::map::AbstractLayerPtr> ls;
+    te::qt::widgets::GetValidLayers(e.m_layerExplorer->model(), QModelIndex(), ls);
+
+    //draw
+    d.m_display->draw(ls);
+  }
 }
 
 void te::qt::plugins::edit::ToolBar::onCreateUndoViewActivated(bool /*checked*/)

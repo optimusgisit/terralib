@@ -124,6 +124,8 @@ namespace te
 
           void onDeletePartToolActivated(bool checked);
 
+          void onCreateLayerActivated();
+
         Q_SIGNALS:
 
           /*! This signal is emitted when the layer selection changed. */
@@ -158,6 +160,7 @@ namespace te
           QAction* m_mergeGeometriesToolAction;
           QAction* m_createPointToolAction;
           QAction* m_deletePartToolAction;
+          QAction* m_createLayerAction;
           QAction* m_undoToolAction;
           QAction* m_redoToolAction;
           QList<QAction*> m_tools;
@@ -178,6 +181,7 @@ namespace te
           bool m_isEnabled;
 
         protected:
+
           te::map::AbstractLayerPtr getLayer(const std::string& id);
           void initialize();
           void initializeActions();
