@@ -888,29 +888,29 @@ fi
 #
 # QScintilla
 #
-if [ ! -f "$TERRALIB_DEPENDENCIES_DIR/lib/libqscintilla2.dylib" ]; then
-  echo "installing QScintilla..."
-  log_lib "QSintilla" 
-
-  sleep 1s
-
-  tar xzvf QScintilla-gpl-2.8.tar.gz > /dev/null 2> /dev/null
-  valid $? "Error: could not uncompress QScintilla-gpl-2.8.tar.gz!"
-
-  cd QScintilla-gpl-2.8/Qt4Qt5 > /dev/null
-  valid $? "Error: could not change dir to QScintilla-gpl-2.8/Qt4Qt5!"
-
-  qmake "TERRALIB_DIR=$TERRALIB_DEPENDENCIES_DIR" > /dev/null 2>> ../build.log
-  valid $? "Error: could not prepare QScintilla build with qmake!"
-
-  make -j 4 > /dev/null 2>> ../build.log
-  valid $? "Error: could not make QScintilla!"
-
-  make install > /dev/null 2>> ../build.log
-  valid $? "Error: Could not install QScintilla!"
-
-  cd ../.. > /dev/null
-fi
+#if [ ! -f "$TERRALIB_DEPENDENCIES_DIR/lib/libqscintilla2.dylib" ]; then
+#  echo "installing QScintilla..."
+#  log_lib "QSintilla" 
+#
+#  sleep 1s
+#
+#  tar xzvf QScintilla-gpl-2.8.tar.gz > /dev/null 2> /dev/null
+#  valid $? "Error: could not uncompress QScintilla-gpl-2.8.tar.gz!"
+#
+#  cd QScintilla-gpl-2.8/Qt4Qt5 > /dev/null
+#  valid $? "Error: could not change dir to QScintilla-gpl-2.8/Qt4Qt5!"
+#
+#  qmake "TERRALIB_DIR=$TERRALIB_DEPENDENCIES_DIR" > /dev/null 2>> ../build.log
+#  valid $? "Error: could not prepare QScintilla build with qmake!"
+#
+#  make -j 4 > /dev/null 2>> ../build.log
+#  valid $? "Error: could not make QScintilla!"
+#
+#  make install > /dev/null 2>> ../build.log
+#  valid $? "Error: Could not install QScintilla!"
+#
+#  cd ../.. > /dev/null
+#fi
 
 
 #
