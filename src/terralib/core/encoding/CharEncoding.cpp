@@ -60,7 +60,7 @@ std::string te::core::CharEncoding::toUTF8(const std::string &src)
   g.locale_cache_enabled(true);
   try
   {
-    std::locale loc = g(boost::locale::util::get_system_locale());
+    std::locale loc = g(boost::locale::util::get_system_locale(true));
     return boost::locale::conv::to_utf<char>(src, loc);
   }
   catch(std::exception &e)
@@ -79,7 +79,7 @@ std::string te::core::CharEncoding::fromUTF8(const std::string &src)
   g.locale_cache_enabled(true);
   try
   {
-    std::locale loc = g(boost::locale::util::get_system_locale());
+    std::locale loc = g(boost::locale::util::get_system_locale(true));
     return boost::locale::conv::from_utf<char>(src, loc);
   }
   catch(std::exception &e)
